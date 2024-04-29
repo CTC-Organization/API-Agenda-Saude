@@ -1,33 +1,27 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { z } from 'zod';
+import { UserRepository } from './user.repository';
+import { hash } from 'bcryptjs';
+import { excludeFieldsInEntity } from './../utils/exclude-fields';
 
 @Injectable()
 export class UserService {
-    async createUser(createUserDto: CreateUserDto) {
-        const schema = z.object({
-            email: z.string().email().trim().min(1),
-            password: z.string().trim().min(1),
+    constructor(private userRepository: UserRepository) {}
+
+    async createUser({ email, password }: CreateUserDto) {
+        if (await this.userRepository.findByEmail(email)) {
+            throw new BadRequestException('Email indisponível');
+        }
+
+        const passwordHashed = await hash(password, 10);
+
+        const user = await this.userRepository.create({
+            email,
+            password: passwordHashed,
         });
 
-        const userData = schema.parse(createUserDto);
-        try {
-            console.log(userData);
-            return await userData;
-        } catch (error) {
-            throw new Error(error);
-        }
+        excludeFieldsInEntity(user, 'password');
+
+        return user;
     }
-
-    // findOneUser(id: string) {
-    //     if (!id) {
-    //         throw new BadRequestException();
-    //     }
-
-    //     try {
-    //         return await createUserDto;
-    //     } catch (error) {
-    //         throw new Error(error);
-    //     }
-    // }
 }
