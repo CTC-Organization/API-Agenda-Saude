@@ -1,11 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { AppService } from './app.service';
+import { Logger } from '@nestjs/common';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  const appService = app.get(AppService); // Injeta o AppService
-  await appService.createUser('Diogo');
-  await app.listen(3000);
+    const app = await NestFactory.create(AppModule);
+    await app.listen(process.env.PORT || 8080);
+
+    Logger.log(
+        `Server running on port ${process.env.PORT}`,
+        process.env.NODE_ENV.toUpperCase() + ' MODE',
+    );
 }
 bootstrap();
