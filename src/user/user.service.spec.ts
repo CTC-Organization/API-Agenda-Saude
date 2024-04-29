@@ -1,70 +1,84 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UserRepository } from './user.repository';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { faker } from '@faker-js/faker';
-import { ZodError } from 'zod';
+import { randomUUID } from 'node:crypto';
+
+const mockUserRepository = {
+    create: jest.fn(),
+    findByEmail: jest.fn(),
+};
+
+let userRepository: UserRepository;
 
 describe('UserService', () => {
-    let service: UserService;
+    let sut: UserService;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
-            providers: [UserService],
+            providers: [UserService, { provide: UserRepository, useValue: mockUserRepository }],
         }).compile();
 
-        service = module.get<UserService>(UserService);
+        sut = module.get<UserService>(UserService);
+        userRepository = module.get<UserRepository>(UserRepository);
     });
 
-    it('should be defined', () => {
-        expect(service).toBeDefined();
+    afterEach(() => {
+        jest.clearAllMocks();
     });
 
-    describe('createUser', () => {
-        it('should create a user with valid email and password', async () => {
-            const createUserDto: CreateUserDto = {
-                email: faker.internet.email(),
-                password: faker.internet.password(),
-            };
-            const createdUser = await service.createUser(createUserDto);
-            expect(createdUser).toBeDefined();
-            // Add more assertions as needed
+    it('should create an user', async () => {
+        // Mock user data
+        const userData = {
+            id: randomUUID(),
+            email: 'test@example.com',
+            password: 'xxxxx',
+        };
+
+        // Mock UserRepository behavior to return undefined (indicating email is not in use)
+        mockUserRepository.findByEmail.mockResolvedValue(undefined);
+
+        // Mock the created user
+        const createdUser = {
+            id: randomUUID(),
+            email: userData.email,
+            password: 'xxxxx',
+        };
+
+        // Mock UserRepository behavior to return the created user
+        mockUserRepository.create.mockResolvedValue(createdUser);
+
+        // Call the createUser method
+        const result = await sut.createUser({
+            email: userData.email,
+            password: createdUser.password,
         });
 
-        it('should throw an error if email is missing', async () => {
-            const createUserDto = {
-                email: '',
-                password: faker.internet.password(),
-            };
-            await expect(service.createUser(createUserDto)).rejects.toThrow(ZodError);
-            // Se o serviço não lançar uma exceção com a mensagem 'Email is required', o teste passará.
-        });
+        expect(userRepository.findByEmail).toHaveBeenCalledWith(userData.email);
 
-        it('should not throw an error if password is missing', async () => {
-            const createUserDto = {
-                email: faker.internet.email(),
-                password: '',
-            };
-            await expect(service.createUser(createUserDto)).rejects.toThrow(ZodError);
-            // Se o serviço não lançar uma exceção com a mensagem 'Password is required', o teste passará.
-        });
+        // Expect the result to be the created user
+        expect(result.email).toEqual(createdUser.email);
+    });
 
-        it('should not throw an error if all is missing', async () => {
-            const createUserDto = {
-                email: '',
-                password: '',
-            };
-            await expect(service.createUser(createUserDto)).rejects.toThrow(ZodError);
-            // Se o serviço não lançar uma exceção com a mensagem 'Password is required', o teste passará.
-        });
+    it('should not create a user if email is already in use', async () => {
+        // Mock user data
+        const userData = {
+            id: '123456',
+            email: 'test@example.com',
+            password: 'xxxxx',
+        };
 
-        // Teste para email com formatação inválida
-        it('should not throw an error if email is not in valid format', async () => {
-            const createUserDto = {
-                email: 'invalid_email_format',
-                password: faker.internet.password(),
-            };
-            await expect(service.createUser(createUserDto)).rejects.toThrow(ZodError);
-            // Se o serviço não lançar uma exceção com a mensagem 'Invalid email format', o teste passará.
-        });
+        // Mock UserRepository behavior to return a user (indicating email is in use)
+        mockUserRepository.findByEmail.mockResolvedValue(userData.email);
+
+        // Call the createUser method
+        await expect(sut.createUser({ email: userData.email, password: 'xxxxx' })).rejects.toThrow(
+            'Email indisponível',
+        );
+
+        // Expect UserRepository to have been called with the provided email
+        expect(userRepository.findByEmail).toHaveBeenCalledWith(userData.email);
+
+        // Expect UserRepository.create NOT to have been called
+        expect(userRepository.create).not.toHaveBeenCalled();
     });
 });
