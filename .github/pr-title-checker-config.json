@@ -1,0 +1,17 @@
+{
+  "LABEL": {
+    "name": "O título da PR está fora do padrão",
+    "color": "EEEEEE"
+  },
+  "CHECKS": {
+    "prefixes": ["fix: ", "feat: ", "docs: ", "test: ", "build: ", "perf: ", "style: ", "refactor: ", "chore: ", "remove: ", "cleanup: ", "raw: ", "ci: "],
+    "regexp": "docs\\(v[0-9]\\): ",
+    "regexpFlags": "i",
+    "ignoreLabels" : ["dont-check-PRs-with-this-label", "meta"]
+  },
+  "MESSAGES": {
+    "success": "All OK",
+    "failure": "Failing CI test",
+    "notice": ""
+  }
+}
