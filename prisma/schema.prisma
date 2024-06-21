@@ -13,10 +13,52 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id                               String                   @id @default(uuid())
-  email                            String                   @unique
-  password                         String
+enum Role {
+  PATIENT
+  ADMIN
+}
+
+enum UploadType {
+  SCHEDULE_REFERRAL_REQUEST
+}
+
+model User {
+  id               String             @id @default(uuid())
+  email            String             @unique
+  name             String
+  password         String
+  role             Role
+  ScheduleReferral ScheduleReferral[]
 
   @@map("users")
+}
+
+model ScheduleReferral {
+  id         String   @id @default(uuid())
+  date       DateTime
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  documents  Upload[]
+  patient    User?    @relation(fields: [patient_id], references: [id])
+  patient_id String?
+
+  @@map("schedule_referrals")
+}
+
+model Upload {
+  id         String      @id
+  storage_id String
+  size       String
+  extension  String
+  url        String
+  type       UploadType?
+  name       String?
+
+  created_at           DateTime          @default(now())
+  updated_at           DateTime          @updatedAt
+  schedule_referral    ScheduleReferral? @relation(fields: [schedule_referral_id], references: [id])
+  schedule_referral_id String?
+
+  @@map("uploads")
 }

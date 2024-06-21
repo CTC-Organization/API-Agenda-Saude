@@ -13,15 +13,25 @@ export class UserService {
             throw new BadRequestException('Email indisponível');
         }
 
-        const passwordHashed = await hash(password, 10);
+        const passwordHashed = await hash(password, 8);
 
         const user = await this.userRepository.create({
             email,
             password: passwordHashed,
         });
 
-        excludeFieldsInEntity(user, 'password');
+        //excludeFieldsInEntity(user, 'password');
+        delete user.password;
+        return user;
+    }
 
+    async getUserByEmail(email: string) {
+        const user = await this.userRepository.findByEmail(email);
+        if (!user) {
+            throw new BadRequestException('Email e/ou senha incorreto(s)');
+            // Ou o usuário não existe (mas não retorna isso por segurança)
+        }
+        // delete user.password;
         return user;
     }
 }
