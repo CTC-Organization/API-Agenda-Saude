@@ -108,3 +108,5 @@ model Attachment {
 
   @@map("attachments")
 }
+
+// npx prisma migrate dev --name nome da nova migração para adicionar nova alteração
