@@ -1,22 +1,110 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id                               String                   @id @default(uuid())
-  email                            String                   @unique
-  password                         String
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  PATIENT
+  EMPLOYEE
+  ADMIN
+}
+
+model User {
+  id           String     @id @default(uuid())
+  cpf          String     @unique
+  password     String
+  email        String?    @unique
+  name         String?
+  refreshToken String?    @map("refresh_token")
+  phoneNumber  String?    @map("phone_number")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  patients     Patient[] // "Relacionamentos do prisma"
+  admins       Admin[] // "Relacionamentos do prisma"
+  employees    Employee[] // "Relacionamentos do prisma"
 
   @@map("users")
+}
+
+model Patient {
+  id            String         @id @default(uuid())
+  user          User           @relation(fields: [userId], references: [id])
+  userId        String         @map("user_id")
+  requests      Request[]
+  serviceTokens ServiceToken[]
+
+  @@map("patients")
+}
+
+model Admin {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  @@map("admins")
+}
+
+model Employee {
+  id     Int    @id @default(autoincrement())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @map("user_id")
+
+  @@map("employees")
+}
+
+enum ServiceStatus {
+  CANCELLED
+  COMPLETED
+  EXPIRED
+  PENDING
+}
+
+model ServiceToken {
+  id             String        @id @default(uuid())
+  patient        Patient       @relation(fields: [patientId], references: [id])
+  patientId      String        @map("patient_id")
+  status         ServiceStatus @default(PENDING)
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  expirationDate DateTime      @map("expiration_date")
+  requests       Request[]
+
+  @@map("service_tokens")
+}
+
+enum RequestStatus {
+  CANCELLED
+  COMPLETED
+  EXPIRED
+  PENDING
+}
+
+model Request {
+  id             String        @id @default(uuid())
+  patient        Patient       @relation(fields: [patientId], references: [id])
+  patientId      String        @map("patient_id")
+  serviceToken   ServiceToken  @relation(fields: [serviceTokenId], references: [id])
+  serviceTokenId String        @map("service_token_id")
+  status         RequestStatus @default(PENDING)
+  date           DateTime
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  attachments    Attachment[]
+
+  @@map("requests")
+}
+
+model Attachment {
+  id          String   @id @default(uuid())
+  request     Request  @relation(fields: [requestId], references: [id])
+  requestId   String   @map("request_id")
+  description String?
+  url         String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("attachments")
 }
