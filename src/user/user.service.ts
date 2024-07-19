@@ -9,11 +9,10 @@ export class UserService {
     constructor(private userRepository: UserRepository) {}
 
     async createUser({ email, password, cpf, name, phoneNumber, role }: CreateUserDto) {
-        if (
-            (await this.userRepository.findByEmail(email)) ||
-            (await this.userRepository.findByCpf(cpf))
-        ) {
+        if (await this.userRepository.findByEmail(email)) {
             throw new BadRequestException('Email indisponível');
+        } else if (await this.userRepository.findByCpf(cpf)) {
+            throw new BadRequestException('CPF indisponível');
         }
 
         const passwordHashed = await hash(password, 10);
