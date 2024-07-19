@@ -1,7 +1,7 @@
 services:
     postgres:
-        container_name: agenda_saude_postgres
-        image: postgres
+        container_name: agenda_saude_pg
+        image: postgres:16.3-alpine3.20
         restart: always
         environment:
             POSTGRES_USER: ${POSTGRES_USER}
