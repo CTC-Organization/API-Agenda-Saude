@@ -14,11 +14,15 @@ export type UsersGetInfoDto = Omit<
 export class UserPrismaRepository implements UserRepository {
     constructor(private prisma: PrismaService) {}
 
-    async create({ email, password }: CreateUserDto): Promise<User> {
+    async create({ email, password, cpf, name, phoneNumber, role }: CreateUserDto): Promise<User> {
         const user = await this.prisma.user.create({
             data: {
                 email,
                 password,
+                cpf,
+                name,
+                phoneNumber,
+                role,
             },
         });
 
@@ -41,6 +45,19 @@ export class UserPrismaRepository implements UserRepository {
         return user;
     }
 
+    async findByCpf(cpf: string): Promise<User | null> {
+        const user = await this.prisma.user.findFirst({
+            where: {
+                cpf,
+            },
+        });
+
+        if (user) {
+            excludeFieldsInEntity(user, 'password');
+        }
+
+        return user;
+    }
     async findById(id: string): Promise<User> {
         const user = await this.prisma.user.findUnique({
             where: { id },
