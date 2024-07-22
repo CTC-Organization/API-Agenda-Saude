@@ -2,19 +2,22 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { UserRepository } from '../../user/user.repository';
 import { PrismaService } from '../prisma.service';
 import { User } from '@prisma/client';
-import { CreateUserDto } from 'src/user/dto/create-user.dto';
+import { CreateUserDto } from '@/user/dto/create-user.dto';
 import { excludeFieldsInEntity } from '../../utils/exclude-fields';
-
-export type UsersGetInfoDto = Omit<
-    User,
-    'email' | 'password' | 'collegeId' | 'role' | 'createdAt' | 'updatedAt'
->;
+import { UpdateUserDto } from '@/user/dto/update-user.dto';
 
 @Injectable()
 export class UserPrismaRepository implements UserRepository {
-    constructor(private prisma: PrismaService) {}
+    constructor(public prisma: PrismaService) {}
 
-    async create({ email, password, cpf, name, phoneNumber, role }: CreateUserDto): Promise<User> {
+    async createUser({
+        email,
+        password,
+        cpf,
+        name,
+        phoneNumber,
+        role,
+    }: CreateUserDto): Promise<User> {
         const user = await this.prisma.user.create({
             data: {
                 email,
@@ -31,7 +34,7 @@ export class UserPrismaRepository implements UserRepository {
         return user;
     }
 
-    async findByEmail(email: string): Promise<User | null> {
+    async findUserByEmail(email: string): Promise<User | null> {
         const user = await this.prisma.user.findFirst({
             where: {
                 email,
@@ -45,7 +48,7 @@ export class UserPrismaRepository implements UserRepository {
         return user;
     }
 
-    async findByCpf(cpf: string): Promise<User | null> {
+    async findUserByCpf(cpf: string): Promise<User | null> {
         const user = await this.prisma.user.findFirst({
             where: {
                 cpf,
@@ -58,7 +61,7 @@ export class UserPrismaRepository implements UserRepository {
 
         return user;
     }
-    async findById(id: string): Promise<User> {
+    async findUserById(id: string): Promise<User> {
         const user = await this.prisma.user.findUnique({
             where: { id },
         });
@@ -70,5 +73,34 @@ export class UserPrismaRepository implements UserRepository {
         excludeFieldsInEntity(user, 'password');
 
         return user;
+    }
+    async updateUser({
+        id,
+        email,
+        password,
+        cpf,
+        name,
+        phoneNumber,
+        role,
+    }: UpdateUserDto): Promise<User | null> {
+        const result = await this.prisma.user.update({
+            where: {
+                id,
+            },
+            data: {
+                email,
+                password,
+                cpf,
+                name,
+                phoneNumber,
+                role,
+            },
+        });
+
+        if (result) {
+            excludeFieldsInEntity(result, 'password');
+        }
+
+        return result;
     }
 }

@@ -3,7 +3,11 @@ export interface IEnvInterface {
 
     getNodeEnv(): string;
 
-    getDatabaseUrl(): string;
-
     getDatabase(): string;
+
+    getJwtPrivateKey(): string;
+
+    getJwtPublicKey(): string;
+
+    getJwtAccessTokenExpiresIn(): string;
 }

@@ -12,11 +12,19 @@ export class EnvConfigService implements IEnvInterface {
     getNodeEnv(): string {
         return this.configService.get<string>('NODE_ENV');
     }
-    getDatabaseUrl(): string {
-        return this.configService.get<string>('DATABASE_URL');
-    }
 
     getDatabase(): string {
         return this.configService.get<string>('POSTGRES_DB');
+    }
+    getJwtPrivateKey(): string {
+        return this.configService.get<string>('JWT_PRIVATE_KEY');
+    }
+
+    getJwtPublicKey(): string {
+        return this.configService.get<string>('JWT_PUBLIC_KEY');
+    }
+
+    getJwtAccessTokenExpiresIn(): string {
+        return this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN');
     }
 }

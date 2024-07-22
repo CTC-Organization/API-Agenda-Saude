@@ -9,15 +9,15 @@ export class UserService {
     constructor(private userRepository: UserRepository) {}
 
     async createUser({ email, password, cpf, name, phoneNumber, role }: CreateUserDto) {
-        if (await this.userRepository.findByEmail(email)) {
+        if (await this.userRepository.findUserByEmail(email)) {
             throw new BadRequestException('Email indisponível');
-        } else if (await this.userRepository.findByCpf(cpf)) {
+        } else if (await this.userRepository.findUserByCpf(cpf)) {
             throw new BadRequestException('CPF indisponível');
         }
 
         const passwordHashed = await hash(password, 10);
 
-        const user = await this.userRepository.create({
+        const user = await this.userRepository.createUser({
             cpf,
             email,
             password: passwordHashed,
@@ -32,7 +32,13 @@ export class UserService {
     }
 
     async getUserById(id: string) {
-        const user = await this.userRepository.findById(id);
+        const user = await this.userRepository.findUserById(id);
+        if (!user) throw new NotFoundException('Usuário não encontrado');
+        excludeFieldsInEntity(user, 'password');
+        return user;
+    }
+    async getUserByCpf(cpf: string) {
+        const user = await this.userRepository.findUserByCpf(cpf);
         if (!user) throw new NotFoundException('Usuário não encontrado');
         excludeFieldsInEntity(user, 'password');
         return user;

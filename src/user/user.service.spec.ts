@@ -4,9 +4,9 @@ import { UserService } from './user.service';
 import { randomUUID } from 'node:crypto';
 
 const mockUserRepository = {
-    create: jest.fn(),
-    findByEmail: jest.fn(),
-    findByCpf: jest.fn(),
+    createUser: jest.fn(),
+    findUserByEmail: jest.fn(),
+    findUserByCpf: jest.fn(),
 };
 
 let userRepository: UserRepository;
@@ -26,7 +26,7 @@ describe('UserService', () => {
     });
     it('should create an user', async () => {
         // Mock UserRepository behavior to return undefined (indicating email is not in use)
-        mockUserRepository.findByEmail.mockResolvedValue(undefined);
+        mockUserRepository.findUserByEmail.mockResolvedValue(undefined);
 
         // Mock the created user
         const createdUser = {
@@ -37,7 +37,7 @@ describe('UserService', () => {
         };
 
         // Mock UserRepository behavior to return the created user
-        mockUserRepository.create.mockResolvedValue(createdUser);
+        mockUserRepository.createUser.mockResolvedValue(createdUser);
 
         // Call the createUser method
         const result = await sut.createUser({
@@ -45,7 +45,7 @@ describe('UserService', () => {
             password: createdUser.password,
             cpf: createdUser.cpf,
         });
-        expect(userRepository.findByEmail).toHaveBeenCalledWith(createdUser.email);
+        expect(userRepository.findUserByEmail).toHaveBeenCalledWith(createdUser.email);
         // Expect the result to be the created user
         expect(result.email).toEqual(createdUser.email);
     });
@@ -58,18 +58,18 @@ describe('UserService', () => {
             cpf: 'xxxxx',
         };
         // Mock UserRepository behavior to return a user (indicating email is in use)
-        mockUserRepository.findByEmail.mockResolvedValue(userData.email);
+        mockUserRepository.findUserByEmail.mockResolvedValue(userData.email);
         // Call the createUser method
         await expect(
             sut.createUser({ email: userData.email, password: 'xxxxx', cpf: 'xxxxx' }),
         ).rejects.toThrow('Email indisponível');
         // Expect UserRepository to have been called with the provided email
-        expect(userRepository.findByEmail).toHaveBeenCalledWith(userData.email);
+        expect(userRepository.findUserByEmail).toHaveBeenCalledWith(userData.email);
         // Expect UserRepository.create NOT to have been called
-        expect(userRepository.create).not.toHaveBeenCalled();
+        expect(userRepository.createUser).not.toHaveBeenCalled();
     });
     it('should not create a user if CPF is already in use', async () => {
-        mockUserRepository.findByEmail.mockResolvedValue(undefined);
+        mockUserRepository.findUserByEmail.mockResolvedValue(undefined);
         // Mock user data
         const userData = {
             email: 'test@example.com',
@@ -77,7 +77,7 @@ describe('UserService', () => {
             cpf: 'xxxxx',
         };
         // Mock UserRepository behavior to return a user (indicating email is in use)
-        mockUserRepository.findByCpf.mockResolvedValue(userData.cpf);
+        mockUserRepository.findUserByCpf.mockResolvedValue(userData.cpf);
         // Call the createUser method
         await expect(
             sut.createUser({
@@ -87,8 +87,8 @@ describe('UserService', () => {
             }),
         ).rejects.toThrow('CPF indisponível');
         // Expect UserRepository to have been called with the provided email
-        expect(userRepository.findByCpf).toHaveBeenCalledWith(userData.cpf);
+        expect(userRepository.findUserByCpf).toHaveBeenCalledWith(userData.cpf);
         // Expect UserRepository.create NOT to have been called
-        expect(userRepository.create).not.toHaveBeenCalled();
+        expect(userRepository.createUser).not.toHaveBeenCalled();
     });
 });
