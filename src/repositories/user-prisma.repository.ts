@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '@/services/prisma.service';
 import { User } from '@prisma/client';
@@ -59,7 +59,7 @@ export class UserPrismaRepository implements UserRepository {
         });
 
         if (!user) {
-            throw new BadRequestException('Usuário não encontrado');
+            throw new NotFoundException('Usuário não encontrado');
         }
         delete user.password;
         return user;
@@ -86,6 +86,9 @@ export class UserPrismaRepository implements UserRepository {
                 role,
             },
         });
+        if (!result) {
+            throw new NotFoundException('Usuário não encontrado');
+        }
 
         delete result.password;
 

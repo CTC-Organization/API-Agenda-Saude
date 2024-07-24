@@ -29,7 +29,6 @@ export class PatientController {
     @UseGuards(ValidateIsUserSelfOrAdmin)
     @Patch(':id')
     updatePatient(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
-        console.log('corpo recebido: ', updatePatientDto);
         return this.patientService.updatePatient(id, updatePatientDto);
     }
 }

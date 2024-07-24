@@ -12,11 +12,12 @@ import { AuthModule } from './auth.module';
     providers: [
         PatientService,
         PrismaService,
+        PatientPrismaRepository, // Adicionado aos providers
         {
             provide: PatientRepository,
             useClass: PatientPrismaRepository,
         },
     ],
-    exports: [PatientService, PatientRepository],
+    exports: [PatientService, PatientRepository, PatientPrismaRepository],
 })
 export class PatientModule {}
