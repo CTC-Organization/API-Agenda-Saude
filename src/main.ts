@@ -38,8 +38,6 @@ async function bootstrap() {
         transform: true,
     });
 
-    console.log('ValidationPipe configured with:', validationPipe);
-
     app.useGlobalPipes(validationPipe);
 
     await app.listen(process.env.PORT || 8080);
