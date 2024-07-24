@@ -17,7 +17,7 @@
         "forceConsistentCasingInFileNames": false,
         "noFallthroughCasesInSwitch": false,
         // "baseUrl": "./",
-        "baseUrl": "./src", // Define a base para os caminhos relativos
+        "baseUrl": "src", // Define a base para os caminhos relativos
         "paths": {
             "@/*": ["*"]
         }

@@ -21,6 +21,7 @@ model User {
   email        String?    @unique
   name         String?
   refreshToken String?    @map("refresh_token")
+  birthDate    DateTime?  @map("birth_date")
   phoneNumber  String?    @map("phone_number")
   createdAt    DateTime   @default(now()) @map("created_at")
   updatedAt    DateTime   @updatedAt @map("updated_at")
@@ -34,6 +35,7 @@ model User {
 model Patient {
   id            String         @id @default(uuid())
   user          User           @relation(fields: [userId], references: [id])
+  susNumber     String?        @map("sus_number")
   userId        String         @map("user_id")
   requests      Request[]
   serviceTokens ServiceToken[]

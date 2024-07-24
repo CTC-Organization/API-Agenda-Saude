@@ -16,4 +16,6 @@ export interface Patient {
     name?: string;
     phoneNumber?: string;
     role: UserRole;
+    susNumber?: string;
+    birthDate?: Date;
 }
