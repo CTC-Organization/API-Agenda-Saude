@@ -6,7 +6,6 @@
     "private": true,
     "license": "UNLICENSED",
     "scripts": {
-        "preinstall": "node -v | grep -q '^v20.15.1' || { echo 'Incorrect Node.js version. Please use v20.15.1'; exit 1; }",
         "build": "nest build",
         "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
         "start": "nest start",
