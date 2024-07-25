@@ -23,6 +23,7 @@ export class AuthService {
                 cpf,
             },
         });
+        if(!user) throw new BadRequestException('Seu cpf e/ou senha estão incorretos!');
         const isMatch = await argon2.verify(user.password, password);
 
         if (!isMatch) throw new BadRequestException('Seu cpf e/ou senha estão incorretos!');
