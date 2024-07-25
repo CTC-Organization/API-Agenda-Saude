@@ -1,6 +1,4 @@
 FROM node:20.15.1-bookworm-slim
-
-ARG production
 ARG DATABASE_URL
 WORKDIR /usr/src/api
 COPY . .
