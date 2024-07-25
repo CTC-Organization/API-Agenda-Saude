@@ -4,8 +4,8 @@ import { CreatePatientDto } from '@/dto/create-patient.dto';
 import { UpdatePatientDto } from '@/dto/update-patient.dto';
 import { ValidateIsUserSelfOrAdmin } from '../commons/guards/validate-self-or-admin.guard';
 import { AuthGuard } from '../commons/guards/auth.guard';
+import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
 
-@UseGuards(AuthGuard)
 @Controller('patients')
 export class PatientController {
     constructor(private readonly patientService: PatientService) {}
@@ -14,15 +14,18 @@ export class PatientController {
     createPatient(@Body() createPatientDto: CreatePatientDto) {
         return this.patientService.createPatient(createPatientDto);
     }
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Get(':id')
     getPatientById(@Param('id') id: string) {
         return this.patientService.getPatientById(id);
     }
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Get()
     getPatientByCpf(@Body() cpf: string) {
         return this.patientService.getPatientByEmail(cpf);
     }
     @Get()
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     getPatientByEmail(@Body() email: string) {
         return this.patientService.getPatientByEmail(email);
     }
