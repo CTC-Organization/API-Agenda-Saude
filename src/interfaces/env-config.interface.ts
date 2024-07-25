@@ -10,4 +10,7 @@ export interface IEnvInterface {
     getJwtPublicKey(): string;
 
     getJwtAccessTokenExpiresIn(): string;
+    getGoogleDriveFolderId(): string;
+    getGoogleCloudClientEmail(): string;
+    getGoogleCredentialsJson(): string;
 }
