@@ -11,27 +11,27 @@ export class PatientController {
     constructor(private readonly patientService: PatientService) {}
 
     @Post()
-    createPatient(@Body() createPatientDto: CreatePatientDto) {
-        return this.patientService.createPatient(createPatientDto);
+    async createPatient(@Body() createPatientDto: CreatePatientDto) {
+        return await this.patientService.createPatient(createPatientDto);
     }
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Get(':id')
-    getPatientById(@Param('id') id: string) {
-        return this.patientService.getPatientById(id);
+    async getPatientById(@Param('id') id: string) {
+        return await this.patientService.getPatientById(id);
     }
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Get()
-    getPatientByCpf(@Body() cpf: string) {
-        return this.patientService.getPatientByEmail(cpf);
+    async getPatientByCpf(@Body() cpf: string) {
+        return await this.patientService.getPatientByEmail(cpf);
     }
     @Get()
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    getPatientByEmail(@Body() email: string) {
-        return this.patientService.getPatientByEmail(email);
+    async getPatientByEmail(@Body() email: string) {
+        return await this.patientService.getPatientByEmail(email);
     }
     @UseGuards(ValidateIsUserSelfOrAdmin)
     @Patch(':id')
-    updatePatient(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
-        return this.patientService.updatePatient(id, updatePatientDto);
+    async updatePatient(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
+        return await this.patientService.updatePatient(id, updatePatientDto);
     }
 }
