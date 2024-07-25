@@ -57,3 +57,12 @@
 **Para rodar:**
 
 - `pnpm run start:dev`
+
+
+- para gerar novas senhas JWT
+
+$ openssl genrsa -out private.key 2048
+openssl rsa -in private.key -pubout -out public.key
+
+$ openssl base64 -in private.key -out private.key.base64
+openssl base64 -in public.key -out public.key.base64
