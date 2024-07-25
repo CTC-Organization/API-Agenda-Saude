@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserPrismaRepository } from './user-prisma.repository';
 import { PrismaService } from '../services/prisma.service';
 import { PatientRepository } from './patient.repository';
 import { CreatePatient, Patient } from '../interfaces/patient';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
 import { UserRole } from '@prisma/client';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class PatientPrismaRepository extends UserPrismaRepository implements PatientRepository {
@@ -56,6 +57,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 patients: true,
             },
         });
+        if(!result?.patients) throw new NotFoundException("Paciente não encontrado")
         result.id = result.patients[0].id;
         delete result.password;
         delete result.patients;
@@ -71,6 +73,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 patients: true,
             },
         });
+        if(!result?.patients) throw new NotFoundException("Paciente não encontrado")
         result.id = result.patients[0].id;
         delete result.password;
         delete result.patients;

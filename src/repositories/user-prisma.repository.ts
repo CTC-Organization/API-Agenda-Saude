@@ -39,6 +39,7 @@ export class UserPrismaRepository implements UserRepository {
                 email,
             },
         });
+        if(!user) throw new NotFoundException("Usuário não encontrado")
         delete user.password;
 
         return user;
@@ -50,6 +51,7 @@ export class UserPrismaRepository implements UserRepository {
                 cpf,
             },
         });
+        if(!user) throw new NotFoundException("Usuário não encontrado")
         delete user.password;
         return user;
     }
@@ -61,6 +63,7 @@ export class UserPrismaRepository implements UserRepository {
         if (!user) {
             throw new NotFoundException('Usuário não encontrado');
         }
+        if(!user) throw new NotFoundException("Usuário não encontrado")
         delete user.password;
         return user;
     }
