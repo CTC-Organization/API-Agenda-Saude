@@ -57,10 +57,13 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 patients: true,
             },
         });
-        if(!result?.patients) throw new NotFoundException("Paciente não encontrado")
-        result.id = result.patients[0].id;
-        delete result.password;
-        delete result.patients;
+        if(result?.patients){
+            result.id = result.patients[0].id;
+            delete result.patients;
+        }
+        if(!!result){
+            delete result.password;
+        }
         return result;
     }
 
@@ -73,10 +76,13 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 patients: true,
             },
         });
-        if(!result?.patients) throw new NotFoundException("Paciente não encontrado")
-        result.id = result.patients[0].id;
-        delete result.password;
-        delete result.patients;
+        if(result?.patients){
+            result.id = result.patients[0].id;
+            delete result.patients;
+        }
+        if(!!result){
+            delete result.password;
+        }
         return result;
     }
     async findPatientById(id: string): Promise<Patient | null> {
@@ -88,10 +94,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 user: true,
             },
         });
-        if (!result) throw new BadRequestException('Paciente não encontrado');
-
-        delete result.user.password;
-        delete result.user.id;
+        if(!!result?.user)  delete result.user.password
         return { id, ...result.user };
     }
     async updatePatient(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient | null> {
