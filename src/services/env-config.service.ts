@@ -7,24 +7,47 @@ export class EnvConfigService implements IEnvInterface {
     constructor(private configService: ConfigService) {}
 
     getAppPort(): number {
-        return Number(this.configService.get<number>('PORT'));
+        return Number(this.configService.getOrThrow<number>('PORT'));
     }
     getNodeEnv(): string {
-        return this.configService.get<string>('NODE_ENV');
+        return this.configService.getOrThrow<string>('NODE_ENV');
     }
 
     getDatabase(): string {
-        return this.configService.get<string>('POSTGRES_DB');
+        return this.configService.getOrThrow<string>('POSTGRES_DB');
     }
     getJwtPrivateKey(): string {
-        return this.configService.get<string>('JWT_PRIVATE_KEY');
+        return this.configService.getOrThrow<string>('JWT_PRIVATE_KEY');
     }
 
     getJwtPublicKey(): string {
-        return this.configService.get<string>('JWT_PUBLIC_KEY');
+        return this.configService.getOrThrow<string>('JWT_PUBLIC_KEY');
     }
 
     getJwtAccessTokenExpiresIn(): string {
-        return this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN');
+        return this.configService.getOrThrow<string>('JWT_ACCESS_TOKEN_EXPIRES_IN');
     }
+
+    getAwsEndpoint(): string{
+        return this.configService.getOrThrow<string>('AWS_ENDPOINT');
+    }
+
+    getAwsS3Region(): string {
+        return this.configService.getOrThrow<string>('AWS_S3_REGION');
+    }
+
+    getAwsAccessKeyId(): string {
+        return this.configService.getOrThrow<string>('AWS_ACCESS_KEY_ID');
+    }
+    
+    getAwsSecretAccessKey(): string{
+        return this.configService.getOrThrow<string>('AWS_SECRET_ACCESS_KEY');
+    }
+
+    getAwsBucket(): string{
+        return this.configService.getOrThrow<string>('AWS_BUCKET');
+    }
+
+    
+    
 }

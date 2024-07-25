@@ -106,10 +106,15 @@ model Attachment {
   request     Request  @relation(fields: [requestId], references: [id])
   requestId   String   @map("request_id")
   description String?
+  extension   String?
+  size        Int
   url         String
   createdAt   DateTime @default(now()) @map("created_at")
 
   @@map("attachments")
 }
 
+enum UploadType {
+  SCHEDULE_REFERRAL_REQUEST
+}
 // npx prisma migrate dev --name nome da nova migração para adicionar nova alteração

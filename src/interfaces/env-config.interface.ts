@@ -10,4 +10,12 @@ export interface IEnvInterface {
     getJwtPublicKey(): string;
 
     getJwtAccessTokenExpiresIn(): string;
+
+    getAwsEndpoint(): string;
+
+    getAwsS3Region(): string;
+
+    getAwsAccessKeyId(): string;
+    
+    getAwsSecretAccessKey(): string;
 }
