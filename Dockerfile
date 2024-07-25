@@ -5,7 +5,7 @@ FROM node:20.15.1-bookworm-slim
 WORKDIR /usr/src/api
 
 # Copie os arquivos package.json e pnpm-lock.yaml para o diretório de trabalho
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml tsconfig.build.json tsconfig.json prisma src nest-cli.json test .tool-verions ./
 
 # Instale o pnpm na versão específica
 RUN npm install -g pnpm@8.6.12
