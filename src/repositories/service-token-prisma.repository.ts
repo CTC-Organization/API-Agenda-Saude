@@ -61,8 +61,8 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
     }
     async createServiceToken({ patientId }: CreateServiceTokenDto) {
         try {
-            const patient = await this.patientRepository.findPatientById(patientId);
-
+            const patient = await this.patientRepository.findPatientById(patientId);                    
+            if(!patient) throw new BadRequestException("Paciente não encontrado")
             const result = await this.prisma.serviceToken.findMany({
                 where: {
                     status: ServiceStatus.PENDING,
