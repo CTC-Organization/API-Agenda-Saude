@@ -20,23 +20,25 @@ export class RequestService {
         private patientRepository: PatientRepository,
     ) {}
 
-    async createRequest({ date, files, serviceTokenId, patientId }: CreateRequestDto) {
+    async createRequest(
+        files: Array<Express.Multer.File>,
+        { date, serviceTokenId, patientId }: CreateRequestDto,
+    ) {
         try {
             const serviceToken = await this.serviceTokenRepository.findServiceTokenById(
                 serviceTokenId,
             );
 
             if (!serviceToken) {
-                throw new NotFoundException('Ficha de Atendimento não encontrada');
-            } else if (serviceToken.ServiceStatus !== ServiceStatus.PENDING) {
+                throw new NotFoundException('Ficha de Atendimento não encontrada 1');
+            } else if (serviceToken.status !== ServiceStatus.PENDING) {
                 // expiration date é null datas são iguais
                 throw new BadRequestException('Ficha de Atendimento inválida');
             } else if (!(await this.patientRepository.findPatientById(patientId))) {
                 throw new NotFoundException('Paciente não encontrada');
             }
-            return await this.requestRepository.createRequest({
+            return await this.requestRepository.createRequest(files, {
                 patientId,
-                files,
                 date,
                 serviceTokenId,
             });

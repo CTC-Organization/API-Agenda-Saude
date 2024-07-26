@@ -9,13 +9,12 @@ import { AttachmentRepository } from '@/repositories/attachment.repository';
 import { ServiceTokenModule } from './service-token.module';
 import { AuthModule } from './auth.module';
 
-@Global()
 @Module({
     imports: [
         AuthModule,
-        forwardRef(() => EnvConfigModule), // Importa EnvConfigModule se necessário para configurar o envConfigService
+        forwardRef(() => EnvConfigModule),
         ServiceTokenModule,
-        forwardRef(() => RequestModule), // Usar forwardRef para resolver dependência circular
+        forwardRef(() => RequestModule),
     ],
     controllers: [AttachmentController],
     providers: [

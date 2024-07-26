@@ -115,6 +115,7 @@ model Attachment {
   name        String
   url         String
   createdAt   DateTime       @default(now()) @map("created_at")
+  folder      String
 
   @@map("attachments")
 }

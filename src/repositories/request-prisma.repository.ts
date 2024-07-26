@@ -9,7 +9,7 @@ import { UserPrismaRepository } from './user-prisma.repository';
 import { PrismaService } from '../services/prisma.service';
 import { RequestRepository } from './request.repository';
 import { CreateRequestDto } from '@/dto/create-request.dto';
-import { ServiceStatus, Request, AttachmentType } from '@prisma/client';
+import { ServiceStatus, Request, AttachmentType, RequestStatus } from '@prisma/client';
 import { PatientPrismaRepository } from './patient-prisma.repository';
 import { date } from 'zod';
 import { UpdateRequestDto } from '@/dto/update-request.dto';
@@ -24,26 +24,31 @@ export class RequestPrismaRepository implements RequestRepository {
         private attachmentPrismaRepository: AttachmentPrismaRepository,
         private serviceTokenPrismaRepository: ServiceTokenPrismaRepository,
     ) {}
-    async createRequest({ date, files, patientId, serviceTokenId }: CreateRequestDto) {
-        return await this.prisma.$transaction(async (tx) => {
-            const request = await tx.request.create({
-                data: {
-                    date,
-                    patientId,
-                    serviceTokenId,
-                    status: ServiceStatus.PENDING,
-                },
-            });
-            await this.attachmentPrismaRepository.createAttachmentsOnRequestCreate(tx, {
+    async createRequest(
+        files: Array<Express.Multer.File>,
+        { date, patientId, serviceTokenId }: CreateRequestDto,
+    ) {
+        const request = await this.prisma.request.create({
+            data: {
+                date,
+                patientId,
+                serviceTokenId,
+                status: RequestStatus.PENDING,
+            },
+        });
+        if (!!request) {
+            console.log('criou request');
+            await this.attachmentPrismaRepository.createAttachments({
                 attachmentType: AttachmentType.REQUEST_ATTACHMENT,
                 files,
                 referenceId: request.id,
+                folder: 'request_attachments',
             });
-            await this.serviceTokenPrismaRepository.completeServiceTokenOnRequestCreate(
-                tx,
-                patientId,
-            );
-        });
+        }
+        console.log('passou da attachmentPrismaRepository.createAttachmentsOnRequestCreate');
+        await this.serviceTokenPrismaRepository.completeServiceToken(patientId);
+        console.log('passou da serviceTokenPrismaRepository.completeServiceTokenOnRequestCreate');
+        return request;
     }
     async updateRequest({ date, requestId }: UpdateRequestDto) {
         return await this.prisma.request.update({
@@ -58,7 +63,7 @@ export class RequestPrismaRepository implements RequestRepository {
     async completeRequest(patientId: string): Promise<any> {
         const result = await this.prisma.request.findMany({
             where: {
-                status: ServiceStatus.PENDING,
+                status: RequestStatus.PENDING,
                 patientId,
             },
             include: {
@@ -69,18 +74,18 @@ export class RequestPrismaRepository implements RequestRepository {
 
         return await this.prisma.request.updateMany({
             where: {
-                status: ServiceStatus.PENDING,
+                status: RequestStatus.PENDING,
                 patientId,
             },
             data: {
-                status: ServiceStatus.COMPLETED,
+                status: RequestStatus.COMPLETED,
             },
         });
     }
     async cancelRequest(patientId: string): Promise<any> {
         const result = await this.prisma.request.findMany({
             where: {
-                status: ServiceStatus.PENDING,
+                status: RequestStatus.PENDING,
                 patientId,
             },
             include: {
@@ -92,11 +97,11 @@ export class RequestPrismaRepository implements RequestRepository {
 
         return await this.prisma.request.updateMany({
             where: {
-                status: ServiceStatus.PENDING,
+                status: RequestStatus.PENDING,
                 patientId,
             },
             data: {
-                status: ServiceStatus.CANCELLED,
+                status: RequestStatus.CANCELLED,
             },
         });
     }
@@ -111,14 +116,14 @@ export class RequestPrismaRepository implements RequestRepository {
                 attachments: true,
             },
         });
-        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada');
-        if (result.status === ServiceStatus.PENDING && new Date(result.date) > new Date()) {
+        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 4');
+        if (result.status === RequestStatus.PENDING && new Date(result.date) < new Date()) {
             await this.prisma.request.update({
                 where: {
                     id: result.id,
                 },
                 data: {
-                    status: ServiceStatus.EXPIRED,
+                    status: RequestStatus.EXPIRED,
                 },
             });
         }
@@ -134,11 +139,11 @@ export class RequestPrismaRepository implements RequestRepository {
                 attachments: true,
             },
         });
-        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada');
+        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 5');
         if (result?.length) {
             const now = new Date(); // se expirationDate = undefined então now === expirationDate e não filtra
             const filteredRequestsIds = result
-                .filter((r) => r.status === ServiceStatus.PENDING && new Date(r.date) > now)
+                .filter((r) => r.status === RequestStatus.PENDING && new Date(r.date) < now)
                 .map((x) => x.id);
             if (filteredRequestsIds?.length) {
                 await this.prisma.request.updateMany({
@@ -148,7 +153,7 @@ export class RequestPrismaRepository implements RequestRepository {
                         },
                     },
                     data: {
-                        status: ServiceStatus.EXPIRED,
+                        status: RequestStatus.EXPIRED,
                     },
                 });
             }
