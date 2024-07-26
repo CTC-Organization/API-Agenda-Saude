@@ -1,23 +1,34 @@
-import { Module } from '@nestjs/common';
-import { RequestService } from '../services/request.service';
+import { RequestPrismaRepository } from '@/repositories/request-prisma.repository';
+import { RequestService } from '@/services/request.service';
+import { forwardRef, Global, Module } from '@nestjs/common';
+import { PrismaService } from '@/services/prisma.service';
 import { RequestController } from '@/controllers/request.controller';
-import { RequestPrismaRepository } from '../repositories/request-prisma.repository';
-import { PrismaService } from '../services/prisma.service';
-import { RequestRepository } from '@/repositories/request.repository';
+import { ServiceTokenModule } from './service-token.module';
 import { PatientModule } from './patient.module';
+import { RequestRepository } from '@/repositories/request.repository';
+import { AttachmentModule } from './attachment.module';
+import { EnvConfigModule } from './env-config.module';
 import { AuthModule } from './auth.module';
 
+@Global()
 @Module({
-    imports: [PatientModule, AuthModule], // Certifique-se de importar o PatientModule
+    imports: [
+        AuthModule,
+        forwardRef(() => AttachmentModule), // Usar forwardRef para resolver dependência circular
+        PatientModule,
+        ServiceTokenModule,
+    ],
     controllers: [RequestController],
     providers: [
-        RequestService,
         PrismaService,
-        {
-            provide: RequestRepository,
-            useClass: RequestPrismaRepository,
-        },
+        RequestService,
+        RequestPrismaRepository,
+        { provide: RequestRepository, useClass: RequestPrismaRepository },
     ],
-    exports: [RequestService, RequestRepository],
+    exports: [
+        RequestService,
+        RequestPrismaRepository,
+        { provide: RequestRepository, useClass: RequestPrismaRepository },
+    ],
 })
 export class RequestModule {}

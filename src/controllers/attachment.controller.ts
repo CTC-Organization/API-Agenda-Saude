@@ -28,6 +28,7 @@ export class AttachmentController {
 
     @Get('/attachment-by-request/:id') // está sendo usado apenas para o middleware (GUARD validate-self...)
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
+    // attachment-by-request/idDoPatient?referenceId=idDaRequestOuConsulta...
     async findAllAttachmentsByRequestId(@Query() referenceId: string) {
         return await this.attachmentService.findAllAttachmentsByRequestId(referenceId);
     }

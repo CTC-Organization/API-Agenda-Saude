@@ -5,7 +5,6 @@ import { PatientRepository } from './patient.repository';
 import { CreatePatient, Patient } from '../interfaces/patient';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
 import { UserRole } from '@prisma/client';
-import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class PatientPrismaRepository extends UserPrismaRepository implements PatientRepository {
@@ -57,11 +56,11 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 patients: true,
             },
         });
-        if(result?.patients){
+        if (result?.patients) {
             result.id = result.patients[0].id;
             delete result.patients;
         }
-        if(!!result){
+        if (!!result) {
             delete result.password;
         }
         return result;
@@ -76,11 +75,11 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 patients: true,
             },
         });
-        if(result?.patients){
+        if (result?.patients) {
             result.id = result.patients[0].id;
             delete result.patients;
         }
-        if(!!result){
+        if (!!result) {
             delete result.password;
         }
         return result;
@@ -94,7 +93,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 user: true,
             },
         });
-        if(!!result?.user)  delete result.user.password
+        if (!!result?.user) delete result.user.password;
         return { id, ...result.user };
     }
     async updatePatient(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient | null> {

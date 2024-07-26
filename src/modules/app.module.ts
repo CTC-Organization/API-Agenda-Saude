@@ -8,6 +8,8 @@ import { PatientModule } from './patient.module';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_GUARD } from '@nestjs/core';
 import { RoleGuard } from '../commons/guards/role.guard';
+import { AttachmentModule } from './attachment.module';
+import { RequestModule } from './request.module';
 
 @Module({
     imports: [
@@ -18,6 +20,8 @@ import { RoleGuard } from '../commons/guards/role.guard';
         UserModule,
         PatientModule,
         ServiceTokenModule,
+        RequestModule,
+        AttachmentModule,
     ],
     controllers: [],
     providers: [
