@@ -46,9 +46,18 @@ export class AttachmentController {
         )
         file: Express.Multer.File,
         @Body()
-        { referenceId, attachmentType }: { referenceId: string; attachmentType: AttachmentType },
+        {
+            referenceId,
+            attachmentType,
+            folder,
+        }: { referenceId: string; attachmentType: AttachmentType; folder: string },
     ) {
-        return await this.attachmentService.createAttachment({ file, referenceId, attachmentType });
+        return await this.attachmentService.createAttachment({
+            file,
+            referenceId,
+            attachmentType,
+            folder,
+        });
     }
     @Post('/multiple-attachments')
     @UseInterceptors(AnyFilesInterceptor())
@@ -63,17 +72,25 @@ export class AttachmentController {
         )
         files: Array<Express.Multer.File>,
         @Body()
-        { referenceId, attachmentType }: { referenceId: string; attachmentType: AttachmentType },
+        {
+            referenceId,
+            attachmentType,
+            folder,
+        }: { referenceId: string; attachmentType: AttachmentType; folder: string },
     ) {
         return await this.attachmentService.createAttachments({
             files,
             referenceId,
             attachmentType,
+            folder,
         });
     }
-    @HttpCode(204)
-    @Delete(':attachment')
-    async deleteAttachment(@Param('attachment') attachment: string) {
-        return await this.attachmentService.deleteAttachment(attachment);
+    @Delete('')
+    async deleteAttachment(@Body() attachmentId: string) {
+        return await this.attachmentService.deleteAttachment(attachmentId);
+    }
+    @Delete('/multiple-attachments')
+    async deleteAttachmentsByRequestId(@Body() requestId: string) {
+        return await this.attachmentService.deleteAttachment(requestId);
     }
 }

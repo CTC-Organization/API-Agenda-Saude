@@ -3,53 +3,59 @@ import { PrismaService } from '../services/prisma.service';
 import { AttachmentRepository } from './attachment.repository';
 import { CreateAttachmentDto } from '@/dto/create-attachment.dto';
 import { Attachment, AttachmentType, Prisma } from '@prisma/client';
-import { google } from 'googleapis';
 import { EnvConfigService } from '@/services/env-config.service';
 import { randomUUID } from 'crypto';
 import { CreateAttachmentsDto } from '@/dto/create-attachments.dto';
 import { RequestPrismaRepository } from './request-prisma.repository';
+import { Bucket, Storage } from '@google-cloud/storage';
 
 @Injectable()
 export class AttachmentPrismaRepository implements AttachmentRepository {
+    private bucket: Bucket;
+
     constructor(
         private prisma: PrismaService,
         @Inject(forwardRef(() => RequestPrismaRepository))
         private requestPrismaRepository: RequestPrismaRepository,
 
         private envConfigService: EnvConfigService,
-    ) {}
-    async createAttachment({ file, referenceId, attachmentType }: CreateAttachmentDto) {
+    ) {
+        const credentials = JSON.parse(this.envConfigService.getGoogleCloudCredentials());
+        const storage = new Storage({
+            credentials,
+        });
+        const bucketName = this.envConfigService.getGoggleCloudBucketName();
+        this.bucket = storage.bucket(bucketName);
+    }
+    async createAttachment({ file, referenceId, attachmentType, folder }: CreateAttachmentDto) {
         try {
             if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
                 if (!(await this.requestPrismaRepository.findRequestById(referenceId)))
-                    throw new NotFoundException('Requisição não foi encontrada');
-
-            const auth = new google.auth.GoogleAuth({
-                keyFile: this.envConfigService.getGoogleCredentialsJson(),
-                scopes: ['https://www.googleapis.com/auth/drive'],
+                    throw new NotFoundException('RequisiçfindRequestByIdão não foi encontrada');
+            const fileName = `${file.originalname}-${randomUUID()}`;
+            const blob = this.bucket.file(`${folder}/${fileName}}`);
+            const blobStream = blob.createWriteStream();
+            const uploadPromise = new Promise<string>((resolve, reject) => {
+                blobStream.on('finish', async () => {
+                    // Define as permissões para o arquivo ser publicamente acessível
+                    await blob.makePublic();
+                    const publicUrl = blob.publicUrl();
+                    resolve(publicUrl);
+                });
+                blobStream.on('error', (err) => {
+                    reject(err);
+                });
             });
-            const drive = google.drive({ version: 'v3', auth });
-            const fileMetadata = {
-                name: `${file.originalname}-${randomUUID()}`,
-                parents: [this.envConfigService.getGoogleDriveFolderId()],
-            };
-            const media = {
-                mimeType: `${file.mimetype}`,
-                body: file,
-            };
-            const response = await drive.files.create({
-                media,
-                fields: 'id',
-                requestBody: fileMetadata,
-            });
+            blobStream.end(file.buffer);
+            const publicUrl = await uploadPromise;
 
-            const fileUrl = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
             return await this.prisma.attachment.create({
                 data: {
                     type: attachmentType,
-                    name: fileMetadata.name,
-                    url: fileUrl,
+                    name: fileName,
+                    url: publicUrl,
                     requestId: referenceId,
+                    folder,
                 },
             });
         } catch (err) {
@@ -57,93 +63,125 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
         }
     }
 
-    async createAttachmentsOnRequestCreate(
-        tx: Prisma.TransactionClient,
-        { files, referenceId, attachmentType }: CreateAttachmentsDto,
-    ) {
+    async createAttachmentsOnRequestCreate({
+        files,
+        attachmentType,
+        folder,
+        referenceId,
+    }: CreateAttachmentsDto) {
         try {
-            if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
-                if (!(await this.requestPrismaRepository.findRequestById(referenceId)))
-                    throw new NotFoundException('Requisição não foi encontrada');
-            const auth = new google.auth.GoogleAuth({
-                keyFile: this.envConfigService.getGoogleCredentialsJson(),
-                scopes: ['https://www.googleapis.com/auth/drive'],
-            });
-            const drive = google.drive({ version: 'v3', auth });
+            console.log('chegou no upload Promise');
+            const uploadPromises = files.map(async (file) => {
+                const fileName = `${file.originalname}-${randomUUID()}`;
+                const blob = this.bucket.file(`${folder}/${fileName}}`);
+                const blobStream = blob.createWriteStream();
 
-            const attachmentPromises = files.map(async (file) => {
-                const fileMetadata = {
-                    name: `${file.originalname}-${randomUUID()}`,
-                    parents: [this.envConfigService.getGoogleDriveFolderId()],
-                };
-                const media = {
-                    mimeType: `${file.mimetype}`,
-                    body: file,
-                };
-                const response = await drive.files.create({
-                    media,
-                    fields: 'id',
-                    requestBody: fileMetadata,
+                const uploadPromise = new Promise<string>((resolve, reject) => {
+                    blobStream.on('finish', async () => {
+                        // Define as permissões para o arquivo ser publicamente acessível
+                        await blob.makePublic();
+                        const publicUrl = blob.publicUrl();
+                        resolve(publicUrl);
+                    });
+                    blobStream.on('error', (err) => {
+                        reject(err);
+                    });
                 });
 
-                const fileUrl = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
-                return tx.attachment.create({
+                blobStream.end(file.buffer);
+
+                const publicUrl = await uploadPromise;
+
+                return { file, publicUrl };
+            });
+            console.log('chegou no upload Promise');
+            const uploadedFiles = await Promise.all(uploadPromises);
+            if (!!uploadedFiles) {
+                console.log('passou do upload Promise');
+            }
+            const attachmentCreatePromises = uploadedFiles.map(async ({ file, publicUrl }) => {
+                return this.prisma.attachment.create({
                     data: {
                         type: attachmentType,
-                        name: fileMetadata.name,
-                        url: fileUrl,
+                        name: file.originalname,
+                        url: publicUrl,
                         requestId: referenceId,
+                        folder: folder,
                     },
                 });
             });
+            console.log('chegou no attachments Promise');
 
-            const attachments = await Promise.all(attachmentPromises);
+            const attachments = await Promise.all(attachmentCreatePromises);
+
+            console.log('passou do attachments Promise');
 
             return attachments;
         } catch (err) {
             throw err;
         }
     }
-    async createAttachments({ files, referenceId, attachmentType }: CreateAttachmentsDto) {
+    async createAttachments({ files, referenceId, attachmentType, folder }: CreateAttachmentsDto) {
         try {
             if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
                 if (!(await this.requestPrismaRepository.findRequestById(referenceId)))
                     throw new NotFoundException('Requisição não foi encontrada');
-            const auth = new google.auth.GoogleAuth({
-                keyFile: this.envConfigService.getGoogleCredentialsJson(),
-                scopes: ['https://www.googleapis.com/auth/drive'],
-            });
-            const drive = google.drive({ version: 'v3', auth });
+            const uploadPromises = files.map(async (file) => {
+                const fileName = `${file.originalname}-${randomUUID()}`;
+                const blob = this.bucket.file(`${folder}/${fileName}`);
+                const blobStream = blob.createWriteStream();
 
-            const attachments = await this.prisma.$transaction(async (tx) => {
-                const attachmentPromises = files.map(async (file) => {
-                    const fileMetadata = {
-                        name: `${file.originalname}-${randomUUID()}`,
-                        parents: [this.envConfigService.getGoogleDriveFolderId()],
-                    };
-                    const media = {
-                        mimeType: `${file.mimetype}`,
-                        body: file,
-                    };
-                    const response = await drive.files.create({
-                        media,
-                        fields: 'id',
-                        requestBody: fileMetadata,
+                const uploadPromise = new Promise<string>((resolve, reject) => {
+                    blobStream.on('finish', async () => {
+                        try {
+                            // Define as permissões para o arquivo ser publicamente acessível
+                            await blob.makePublic();
+                            const publicUrl = blob.publicUrl();
+                            resolve(publicUrl);
+                        } catch (err) {
+                            reject(err);
+                        }
                     });
 
-                    const fileUrl = `https://drive.google.com/uc?export=view&id=${response.data.id}`;
-                    return tx.attachment.create({
-                        data: {
-                            type: attachmentType,
-                            name: fileMetadata.name,
-                            url: fileUrl,
-                            requestId: referenceId,
-                        },
+                    blobStream.on('error', (err) => {
+                        reject(err);
                     });
                 });
 
-                return Promise.all(attachmentPromises);
+                blobStream.end(file.buffer);
+
+                try {
+                    const publicUrl = await uploadPromise;
+                    return { file, publicUrl };
+                } catch (err) {
+                    console.error('Error during file upload:', err);
+                    throw err;
+                }
             });
+
+            console.log('chegou no upload Promise');
+
+            const uploadedFiles = await Promise.all(uploadPromises);
+
+            console.log('passou do upload Promise');
+
+            const attachmentCreatePromises = uploadedFiles.map(({ file, publicUrl }) => {
+                return this.prisma.attachment.create({
+                    data: {
+                        id: randomUUID(),
+                        type: attachmentType,
+                        name: file.originalname,
+                        url: publicUrl,
+                        requestId: referenceId,
+                        folder,
+                    },
+                });
+            });
+            console.log('chegou no attachments Promise');
+
+            const attachments = await Promise.all(attachmentCreatePromises);
+
+            console.log('passou do attachments Promise');
 
             return attachments;
         } catch (err) {
@@ -161,6 +199,38 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
         });
     }
 
+    async deleteAttachmentsByRequestId(requestId: string): Promise<void> {
+        try {
+            const attachments = await this.prisma.attachment.findMany({
+                where: { requestId },
+            });
+            if (attachments.length === 0) {
+                throw new NotFoundException('Nenhum anexo encontrado');
+            }
+            if (attachments[0].type === AttachmentType.REQUEST_ATTACHMENT) {
+                const request = await this.requestPrismaRepository.findRequestById(requestId);
+                if (!request) {
+                    throw new NotFoundException('Requisição não foi encontrada');
+                }
+            }
+
+            const deleteFilePromises = attachments.map(async (attachment) => {
+                const blob = this.bucket.file(`${attachment.folder}/${attachment.name}`);
+                await blob.delete();
+            });
+
+            // Aguarda a conclusão de todas as deleções dos arquivos
+            await Promise.all(deleteFilePromises);
+
+            // Deletar os anexos do banco de dados
+            await this.prisma.attachment.deleteMany({
+                where: { requestId },
+            });
+        } catch (err) {
+            console.error('Error deleting attachments:', err);
+            throw err;
+        }
+    }
     async deleteAttachment(attachmentId: string): Promise<void> {
         try {
             const attachment = await this.prisma.attachment.findUnique({
@@ -170,16 +240,9 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
             if (!attachment) {
                 throw new NotFoundException('Attachment not found');
             }
+            const blob = this.bucket.file(`${attachment.folder}/${attachment.name}`);
 
-            const auth = new google.auth.GoogleAuth({
-                keyFile: this.envConfigService.getGoogleCredentialsJson(),
-                scopes: ['https://www.googleapis.com/auth/drive'],
-            });
-            const drive = google.drive({ version: 'v3', auth });
-            const fileId = attachment.url.split('id=')[1];
-            await drive.files.delete({
-                fileId: fileId,
-            });
+            await blob.delete();
 
             await this.prisma.attachment.delete({
                 where: { id: attachmentId },

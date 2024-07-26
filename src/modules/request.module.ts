@@ -7,10 +7,8 @@ import { ServiceTokenModule } from './service-token.module';
 import { PatientModule } from './patient.module';
 import { RequestRepository } from '@/repositories/request.repository';
 import { AttachmentModule } from './attachment.module';
-import { EnvConfigModule } from './env-config.module';
 import { AuthModule } from './auth.module';
 
-@Global()
 @Module({
     imports: [
         AuthModule,

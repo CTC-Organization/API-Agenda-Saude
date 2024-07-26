@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID, IsDateString } from 'class-validator';
+import { IsNotEmpty, IsUUID, IsDateString, IsString } from 'class-validator';
 
 export class CreateRequestDto {
     @IsUUID()
@@ -8,9 +8,6 @@ export class CreateRequestDto {
     @IsUUID()
     @IsNotEmpty()
     patientId: string;
-
-    @IsNotEmpty()
-    readonly files: Array<Express.Multer.File>;
 
     @IsNotEmpty()
     @IsDateString()

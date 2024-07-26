@@ -123,10 +123,10 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
                 requests: true,
             },
         });
-        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada');
+        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 2');
         if (
             result.status === ServiceStatus.PENDING &&
-            new Date(result.expirationDate) > new Date()
+            new Date(result.expirationDate) < new Date()
         ) {
             return await this.prisma.serviceToken.update({
                 where: {
@@ -148,12 +148,12 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
                 requests: true,
             },
         });
-        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada');
+        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 3');
         if (result?.length) {
             const now = new Date(); // se expirationDate = undefined então now === expirationDate e não filtra
             const filteredServiceTokensIds = result
                 .filter(
-                    (r) => r.status === ServiceStatus.PENDING && new Date(r.expirationDate) > now,
+                    (r) => r.status === ServiceStatus.PENDING && new Date(r.expirationDate) < now,
                 )
                 .map((x) => x.id);
             if (filteredServiceTokensIds?.length) {

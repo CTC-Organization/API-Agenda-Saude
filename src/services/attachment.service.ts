@@ -3,9 +3,8 @@ import { CreateAttachmentDto } from '@/dto/create-attachment.dto';
 import { AttachmentRepository } from '@/repositories/attachment.repository';
 import { z } from 'zod';
 import { AttachmentType } from '@prisma/client';
-// export const CreateAttachmentSchema = z.object({
-//     patientId: z.string().length(1, 'É obrigatório o ID de um paciente'),
-// });
+import { Storage } from '@google-cloud/storage';
+import { RequestRepository } from '@/repositories/request.repository';
 
 @Injectable()
 export class AttachmentService {
@@ -15,16 +14,19 @@ export class AttachmentService {
         file,
         attachmentType,
         referenceId,
+        folder,
     }: {
         file: Express.Multer.File;
         attachmentType: AttachmentType;
         referenceId: string;
+        folder: string;
     }) {
         try {
             return await this.attachmentRepository.createAttachment({
                 file,
                 attachmentType,
                 referenceId,
+                folder,
             });
         } catch (err) {
             throw err;
@@ -34,15 +36,18 @@ export class AttachmentService {
         files,
         attachmentType,
         referenceId,
+        folder,
     }: {
         files: Array<Express.Multer.File>;
         attachmentType: AttachmentType;
         referenceId: string;
+        folder: string;
     }) {
         const result = await this.attachmentRepository.createAttachments({
             files,
             attachmentType,
             referenceId,
+            folder,
         });
         return result;
     }
@@ -50,8 +55,12 @@ export class AttachmentService {
         const result = await this.attachmentRepository.findAllAttachmentsByRequestId(referenceId);
         return result;
     }
-    async deleteAttachment(attachment: string) {
-        const result = await this.attachmentRepository.deleteAttachment(attachment);
+    async deleteAttachment(attachmentId: string) {
+        const result = await this.attachmentRepository.deleteAttachment(attachmentId);
+        return result;
+    }
+    async deleteAttachmentsByRequestId(requestId: string) {
+        const result = await this.attachmentRepository.deleteAttachmentsByRequestId(requestId);
         return result;
     }
     async findAttachmentById(id: string) {
