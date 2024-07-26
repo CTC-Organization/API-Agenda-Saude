@@ -8,7 +8,7 @@ import { PatientModule } from './patient.module';
 import { AuthModule } from './auth.module';
 
 @Module({
-    imports: [PatientModule, AuthModule], // Certifique-se de importar o PatientModule
+    imports: [PatientModule, AuthModule],
     controllers: [ServiceTokenController],
     providers: [
         ServiceTokenService,
@@ -17,7 +17,8 @@ import { AuthModule } from './auth.module';
             provide: ServiceTokenRepository,
             useClass: ServiceTokenPrismaRepository,
         },
+        ServiceTokenPrismaRepository,
     ],
-    exports: [ServiceTokenService, ServiceTokenRepository],
+    exports: [ServiceTokenService, ServiceTokenRepository, ServiceTokenPrismaRepository],
 })
 export class ServiceTokenModule {}

@@ -4,6 +4,7 @@ import { UserRepository } from '../repositories/user.repository';
 import { UserPrismaRepository } from '@/repositories/user-prisma.repository';
 import { PatientPrismaRepository } from '@/repositories/patient-prisma.repository';
 import { PatientRepository } from '@/repositories/patient.repository';
+
 @Global()
 @Module({
     providers: [
