@@ -8,6 +8,9 @@ generator client {
   binaryTargets = ["native", "debian-openssl-3.0.x"]
 }
 
+enum AttachmentType {
+  REQUEST_ATTACHMENT
+}
 
 enum UserRole {
   PATIENT
@@ -104,12 +107,14 @@ model Request {
 }
 
 model Attachment {
-  id          String   @id @default(uuid())
-  request     Request  @relation(fields: [requestId], references: [id])
-  requestId   String   @map("request_id")
+  id          String         @id @default(uuid())
+  request     Request        @relation(fields: [requestId], references: [id])
+  requestId   String         @map("request_id")
   description String?
+  type        AttachmentType
+  name        String
   url         String
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt   DateTime       @default(now()) @map("created_at")
 
   @@map("attachments")
 }
