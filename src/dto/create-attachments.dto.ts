@@ -2,9 +2,9 @@ import { AttachedEnhancerDefinition } from '@nestjs/core/inspector/interfaces/ex
 import { AttachmentType } from '@prisma/client';
 import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
-export class CreateAttachmentDto {
+export class CreateAttachmentsDto {
     @IsNotEmpty()
-    readonly file: Express.Multer.File;
+    readonly files: Array<Express.Multer.File>;
 
     @IsNotEmpty()
     @IsString()
