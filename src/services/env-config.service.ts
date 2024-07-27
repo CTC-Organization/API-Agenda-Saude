@@ -27,4 +27,10 @@ export class EnvConfigService implements IEnvInterface {
     getJwtAccessTokenExpiresIn(): string {
         return this.configService.get<string>('JWT_ACCESS_TOKEN_EXPIRES_IN');
     }
+    getGoogleCloudCredentials(): string {
+        return this.configService.get<string>('GOOGLE_CLOUD_CREDENTIALS');
+    }
+    getGoggleCloudBucketName(): string {
+        return this.configService.get<string>('GOOGLE_CLOUD_BUCKET_NAME');
+    }
 }

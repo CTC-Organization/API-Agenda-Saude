@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserPrismaRepository } from './user-prisma.repository';
 import { PrismaService } from '../services/prisma.service';
 import { PatientRepository } from './patient.repository';
@@ -56,9 +56,13 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 patients: true,
             },
         });
-        result.id = result.patients[0].id;
-        delete result.password;
-        delete result.patients;
+        if (result?.patients) {
+            result.id = result.patients[0].id;
+            delete result.patients;
+        }
+        if (!!result) {
+            delete result.password;
+        }
         return result;
     }
 
@@ -71,9 +75,13 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 patients: true,
             },
         });
-        result.id = result.patients[0].id;
-        delete result.password;
-        delete result.patients;
+        if (result?.patients) {
+            result.id = result.patients[0].id;
+            delete result.patients;
+        }
+        if (!!result) {
+            delete result.password;
+        }
         return result;
     }
     async findPatientById(id: string): Promise<Patient | null> {
@@ -85,10 +93,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 user: true,
             },
         });
-        if (!result) throw new BadRequestException('Paciente não encontrado');
-
-        delete result.user.password;
-        delete result.user.id;
+        if (!!result?.user) delete result.user.password;
         return { id, ...result.user };
     }
     async updatePatient(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient | null> {

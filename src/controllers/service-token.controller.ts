@@ -11,27 +11,27 @@ export class ServiceTokenController {
 
     @Post(':id')
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    createServiceToken(@Param('id') id: string) {
-        return this.servicetokenService.createServiceToken(id);
+    async createServiceToken(@Param('id') id: string) {
+        return await this.servicetokenService.createServiceToken(id);
     }
     @Get(':id')
-    findServiceTokenById(@Param('id') id: string) {
-        return this.servicetokenService.findServiceTokenById(id);
+    async findServiceTokenById(@Param('id') id: string) {
+        return await this.servicetokenService.findServiceTokenById(id);
     }
     @Get('list/:id')
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    listServiceTokensByPatientId(@Param('id') id: string) {
-        return this.servicetokenService.listServiceTokensByPatientId(id);
+    async listServiceTokensByPatientId(@Param('id') id: string) {
+        return await this.servicetokenService.listServiceTokensByPatientId(id);
     }
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Patch('cancel/:id')
-    cancelServiceToken(@Param('id') id: string) {
-        return this.servicetokenService.cancelServiceToken(id);
+    async cancelServiceToken(@Param('id') id: string) {
+        return await this.servicetokenService.cancelServiceToken(id);
     }
 
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Patch('complete/:id')
-    completeServiceToken(@Param('id') id: string) {
-        return this.servicetokenService.completeServiceToken(id);
+    async completeServiceToken(@Param('id') id: string) {
+        return await this.servicetokenService.completeServiceToken(id);
     }
 }

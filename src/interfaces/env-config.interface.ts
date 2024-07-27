@@ -10,4 +10,8 @@ export interface IEnvInterface {
     getJwtPublicKey(): string;
 
     getJwtAccessTokenExpiresIn(): string;
+
+    getGoggleCloudBucketName(): string;
+
+    getGoogleCloudCredentials(): string;
 }

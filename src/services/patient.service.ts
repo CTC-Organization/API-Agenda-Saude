@@ -31,12 +31,12 @@ export class PatientService {
         CreatePatientSchema.safeParse(data);
         const { cpf, password, email, phoneNumber, role, name } = data;
 
+        if (!!(await this.patientRepository.findPatientByCpf(cpf))) {
+            throw new BadRequestException('CPF indisponível');
+        }
         if (!!email) {
             const result = await this.patientRepository.findPatientByEmail(email);
             if (!!result) throw new BadRequestException('Email indisponível');
-        }
-        if (await this.patientRepository.findPatientByCpf(cpf)) {
-            throw new BadRequestException('CPF indisponível');
         }
         const passwordHashed = await argon2.hash(password);
         const result = await this.patientRepository.createPatient({
@@ -53,22 +53,25 @@ export class PatientService {
 
     async getPatientById(id: string) {
         const result = await this.patientRepository.findPatientById(id);
+        if(!result) throw new NotFoundException('Paciente não encontrado')
         return result;
     }
     async getPatientByEmail(email: string) {
         const result = await this.patientRepository.findPatientByEmail(email);
+        if(!result) throw new NotFoundException('Paciente não encontrado')
         return result;
     }
     async getPatientByCpf(cpf: string) {
         const result = await this.patientRepository.findPatientByCpf(cpf);
+        if(!result) throw new NotFoundException('Paciente não encontrado')
         return result;
     }
     async updatePatient(id: string, updatePatientDto: UpdatePatientDto) {
-        console.log('phoneNumber: ', updatePatientDto.phoneNumber);
         if (updatePatientDto?.password) {
             updatePatientDto.password = await argon2.hash(updatePatientDto.password);
         }
         const result = await this.patientRepository.updatePatient(id, updatePatientDto);
+        if(!result) throw new NotFoundException('Paciente não encontrado')
         return result;
     }
 }

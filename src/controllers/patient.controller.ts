@@ -4,31 +4,34 @@ import { CreatePatientDto } from '@/dto/create-patient.dto';
 import { UpdatePatientDto } from '@/dto/update-patient.dto';
 import { ValidateIsUserSelfOrAdmin } from '../commons/guards/validate-self-or-admin.guard';
 import { AuthGuard } from '../commons/guards/auth.guard';
+import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
 
-@UseGuards(AuthGuard)
 @Controller('patients')
 export class PatientController {
     constructor(private readonly patientService: PatientService) {}
 
     @Post()
-    createPatient(@Body() createPatientDto: CreatePatientDto) {
-        return this.patientService.createPatient(createPatientDto);
+    async createPatient(@Body() createPatientDto: CreatePatientDto) {
+        return await this.patientService.createPatient(createPatientDto);
     }
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Get(':id')
-    getPatientById(@Param('id') id: string) {
-        return this.patientService.getPatientById(id);
+    async getPatientById(@Param('id') id: string) {
+        return await this.patientService.getPatientById(id);
+    }
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
+    @Get()
+    async getPatientByCpf(@Body() cpf: string) {
+        return await this.patientService.getPatientByEmail(cpf);
     }
     @Get()
-    getPatientByCpf(@Body() cpf: string) {
-        return this.patientService.getPatientByEmail(cpf);
-    }
-    @Get()
-    getPatientByEmail(@Body() email: string) {
-        return this.patientService.getPatientByEmail(email);
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
+    async getPatientByEmail(@Body() email: string) {
+        return await this.patientService.getPatientByEmail(email);
     }
     @UseGuards(ValidateIsUserSelfOrAdmin)
     @Patch(':id')
-    updatePatient(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
-        return this.patientService.updatePatient(id, updatePatientDto);
+    async updatePatient(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
+        return await this.patientService.updatePatient(id, updatePatientDto);
     }
 }
