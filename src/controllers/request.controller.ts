@@ -69,13 +69,11 @@ export class RequestController {
     async listRequestsByPatientId(@Param('id') id: string) {
         return await this.requestService.listRequestsByPatientId(id);
     }
-    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Patch('cancel/:id')
     async cancelRequest(@Param('id') id: string) {
         return await this.requestService.cancelRequest(id);
     }
 
-    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Patch('complete/:id')
     async completeRequest(@Param('id') id: string) {
         return await this.requestService.completeRequest(id);
