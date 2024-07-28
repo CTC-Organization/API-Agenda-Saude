@@ -8,7 +8,6 @@ import { AuthGuard } from '@/commons/guards/auth.guard';
 @ApiTags('Usuários: users')
 export class UserController {
     constructor(private readonly userService: UserService) {}
-
     @Post()
     async createUser(@Body() createUserDto: CreateUserDto) {
         return await this.userService.createUser(createUserDto);

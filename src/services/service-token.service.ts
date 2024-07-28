@@ -1,11 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateServiceTokenDto } from '../dto/create-service-token.dto';
+import { Injectable } from '@nestjs/common';
 import { ServiceTokenRepository } from '../repositories/service-token.repository';
-import { z } from 'zod';
-
-// export const CreateServiceTokenSchema = z.object({
-//     patientId: z.string().length(1, 'É obrigatório o ID de um paciente'),
-// });
 
 @Injectable()
 export class ServiceTokenService {
@@ -13,9 +7,6 @@ export class ServiceTokenService {
 
     async createServiceToken(patientId: string) {
         try {
-            // CreateServiceTokenSchema.parse(data);
-            // const { patientId } = data;
-
             return await this.servicetokenRepository.createServiceToken({ patientId });
         } catch (err) {
             throw err;

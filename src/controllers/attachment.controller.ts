@@ -28,9 +28,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class AttachmentController {
     constructor(private readonly attachmentService: AttachmentService) {}
 
-    @Get('/attachment-by-request/:id') // está sendo usado apenas para o middleware (GUARD validate-self...)
-    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    // attachment-by-request/idDoPatient?referenceId=idDaRequestOuConsulta...
+    @Get('/attachment-by-request')
     async findAllAttachmentsByRequestId(@Query() referenceId: string) {
         return await this.attachmentService.findAllAttachmentsByRequestId(referenceId);
     }
@@ -92,7 +90,11 @@ export class AttachmentController {
         return await this.attachmentService.deleteAttachment(attachmentId);
     }
     @Delete('/multiple-attachments')
+    async deleteAttachments(@Body() attachmentIds: Array<string>) {
+        return await this.attachmentService.deleteAttachments(attachmentIds);
+    }
+    @Delete('/by-request')
     async deleteAttachmentsByRequestId(@Body() requestId: string) {
-        return await this.attachmentService.deleteAttachment(requestId);
+        return await this.attachmentService.deleteAttachmentsByRequestId(requestId);
     }
 }

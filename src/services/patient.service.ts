@@ -21,8 +21,6 @@ export const CreatePatientSchema = z.object({
         .optional(),
 });
 
-// export type createPatientSchema = z.infer<typeof CreatePatientSchema>;
-
 @Injectable()
 export class PatientService {
     constructor(private patientRepository: PatientRepository) {}

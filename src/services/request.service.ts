@@ -1,16 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRequestDto } from '@/dto/create-request.dto';
 import { RequestRepository } from '@/repositories/request.repository';
-import { z } from 'zod';
 import { ServiceTokenRepository } from '@/repositories/service-token.repository';
 import { PatientRepository } from '@/repositories/patient.repository';
-import { AttachmentRepository } from '@/repositories/attachment.repository';
 import { UpdateRequestDto } from '@/dto/update-request.dto';
 import { ServiceStatus } from '@prisma/client';
-
-// export const CreateRequestSchema = z.object({
-//     patientId: z.string().length(1, 'É obrigatório o ID de um paciente'),
-// });
 
 @Injectable()
 export class RequestService {
@@ -32,7 +26,6 @@ export class RequestService {
             if (!serviceToken) {
                 throw new NotFoundException('Ficha de Atendimento não encontrada 1');
             } else if (serviceToken.status !== ServiceStatus.PENDING) {
-                // expiration date é null datas são iguais
                 throw new BadRequestException('Ficha de Atendimento inválida');
             } else if (!(await this.patientRepository.findPatientById(patientId))) {
                 throw new NotFoundException('Paciente não encontrada');

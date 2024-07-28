@@ -1,17 +1,9 @@
-import {
-    BadRequestException,
-    forwardRef,
-    Inject,
-    Injectable,
-    NotFoundException,
-} from '@nestjs/common';
-import { UserPrismaRepository } from './user-prisma.repository';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../services/prisma.service';
 import { RequestRepository } from './request.repository';
 import { CreateRequestDto } from '../dto/create-request.dto';
-import { ServiceStatus, Request, AttachmentType, RequestStatus } from '@prisma/client';
-import { PatientPrismaRepository } from './patient-prisma.repository';
-import { date } from 'zod';
+import { AttachmentType, RequestStatus } from '@prisma/client';
+
 import { UpdateRequestDto } from '../dto/update-request.dto';
 import { AttachmentPrismaRepository } from './attachment-prisma.repository';
 import { ServiceTokenPrismaRepository } from './service-token-prisma.repository';
@@ -138,10 +130,11 @@ export class RequestPrismaRepository implements RequestRepository {
             },
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 5');
+
         if (result?.length) {
-            const now = new Date(); // se expirationDate = undefined então now === expirationDate e não filtra
+            const now = new Date(); // agora
             const filteredRequestsIds = result
-                .filter((r) => r.status === RequestStatus.PENDING && new Date(r.date) < now)
+                .filter((r) => r.status === RequestStatus.PENDING && new Date(r.date) < now) // expirationDate === agora então não filtra
                 .map((x) => x.id);
             if (filteredRequestsIds?.length) {
                 await this.prisma.request.updateMany({

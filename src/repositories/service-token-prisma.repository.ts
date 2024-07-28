@@ -107,7 +107,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
             return await this.prisma.serviceToken.create({
                 data: {
                     patientId,
-                    expirationDate: new Date(new Date().getTime() + 1000 * 60 * 60 * 24), // 1 dia para expiração
+                    expirationDate: new Date(new Date().getTime() + 1000 * 60 * 60 * 24), // expira em 1 dia
                 },
             });
         } catch (err) {
@@ -150,10 +150,10 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 3');
         if (result?.length) {
-            const now = new Date(); // se expirationDate = undefined então now === expirationDate e não filtra
+            const now = new Date();
             const filteredServiceTokensIds = result
                 .filter(
-                    (r) => r.status === ServiceStatus.PENDING && new Date(r.expirationDate) < now,
+                    (r) => r.status === ServiceStatus.PENDING && new Date(r.expirationDate) < now, // se expirationDate = undefined então now === expirationDate e não filtra
                 )
                 .map((x) => x.id);
             if (filteredServiceTokensIds?.length) {

@@ -7,12 +7,14 @@ async function bootstrap() {
     const logger = new Logger(AppModule.name);
 
     const whitelist = [
+        // comentar localhosts ao estar 100% em produção
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:3002',
         'http://localhost:8000',
         'http://localhost:8001',
         'http://localhost:8002',
+        'https://api-agenda-saude-production.up.railway.app',
     ];
 
     const app = await NestFactory.create(AppModule, {

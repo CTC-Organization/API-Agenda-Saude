@@ -10,12 +10,7 @@ import { AttachmentModule } from './attachment.module';
 import { AuthModule } from './auth.module';
 
 @Module({
-    imports: [
-        AuthModule,
-        forwardRef(() => AttachmentModule), // Usar forwardRef para resolver dependência circular
-        PatientModule,
-        ServiceTokenModule,
-    ],
+    imports: [AuthModule, forwardRef(() => AttachmentModule), PatientModule, ServiceTokenModule],
     controllers: [RequestController],
     providers: [
         PrismaService,

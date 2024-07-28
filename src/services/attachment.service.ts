@@ -1,10 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateAttachmentDto } from '@/dto/create-attachment.dto';
+import { Injectable } from '@nestjs/common';
 import { AttachmentRepository } from '@/repositories/attachment.repository';
-import { z } from 'zod';
 import { AttachmentType } from '@prisma/client';
-import { Storage } from '@google-cloud/storage';
-import { RequestRepository } from '@/repositories/request.repository';
 
 @Injectable()
 export class AttachmentService {
@@ -60,6 +56,10 @@ export class AttachmentService {
     }
     async deleteAttachmentsByRequestId(requestId: string) {
         const result = await this.attachmentRepository.deleteAttachmentsByRequestId(requestId);
+        return result;
+    }
+    async deleteAttachments(attachementIds: Array<string>) {
+        const result = await this.attachmentRepository.deleteAttachments(attachementIds);
         return result;
     }
     async findAttachmentById(id: string) {
