@@ -85,7 +85,7 @@ export class AttachmentController {
             folder,
         });
     }
-    @Delete('')
+    @Delete()
     async deleteAttachment(@Body() attachmentId: string) {
         return await this.attachmentService.deleteAttachment(attachmentId);
     }
