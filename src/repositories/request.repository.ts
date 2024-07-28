@@ -1,4 +1,4 @@
-import { UpdateRequestDto } from '@/dto/update-request.dto';
+import { UpdateRequestDto } from '../dto/update-request.dto';
 import { CreateRequestDto } from '../dto/create-request.dto';
 
 export abstract class RequestRepository {

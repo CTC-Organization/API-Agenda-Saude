@@ -8,11 +8,11 @@ import {
 import { UserPrismaRepository } from './user-prisma.repository';
 import { PrismaService } from '../services/prisma.service';
 import { RequestRepository } from './request.repository';
-import { CreateRequestDto } from '@/dto/create-request.dto';
+import { CreateRequestDto } from '../dto/create-request.dto';
 import { ServiceStatus, Request, AttachmentType, RequestStatus } from '@prisma/client';
 import { PatientPrismaRepository } from './patient-prisma.repository';
 import { date } from 'zod';
-import { UpdateRequestDto } from '@/dto/update-request.dto';
+import { UpdateRequestDto } from '../dto/update-request.dto';
 import { AttachmentPrismaRepository } from './attachment-prisma.repository';
 import { ServiceTokenPrismaRepository } from './service-token-prisma.repository';
 

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { UserPrismaRepository } from './user-prisma.repository';
 import { PrismaService } from '../services/prisma.service';
 import { ServiceTokenRepository } from './service-token.repository';
-import { CreateServiceTokenDto } from '@/dto/create-service-token.dto';
+import { CreateServiceTokenDto } from '../dto/create-service-token.dto';
 import { Prisma, ServiceStatus, ServiceToken } from '@prisma/client';
 import { PatientPrismaRepository } from './patient-prisma.repository';
 import { date } from 'zod';
