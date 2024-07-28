@@ -4,7 +4,6 @@ import {
     Body,
     Get,
     Param,
-    Put,
     Patch,
     UseGuards,
     FileTypeValidator,
@@ -15,13 +14,11 @@ import {
     Req,
 } from '@nestjs/common';
 import { RequestService } from '../services/request.service';
-import { CreateRequestDto } from '@/dto/create-request.dto';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
 import { AuthGuard } from '../commons/guards/auth.guard';
 import { UpdateRequestDto } from '@/dto/update-request.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UserInterceptor } from '@/commons/interceptors/user.interceptor';
-import { HttpArgumentsHost } from '@nestjs/common/interfaces';
 import { ApiTags } from '@nestjs/swagger';
 
 @UseGuards(AuthGuard)
@@ -34,8 +31,6 @@ export class RequestController {
     @Post()
     @UseInterceptors(AnyFilesInterceptor())
     async createRequest(
-        // parametro detectando para apenas esse id do patient/admin ou employee
-        // (baseado na autorização acima)
         @UploadedFiles(
             new ParseFilePipe({
                 validators: [

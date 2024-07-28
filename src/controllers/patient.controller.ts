@@ -17,21 +17,25 @@ export class PatientController {
         return await this.patientService.createPatient(createPatientDto);
     }
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
+    @UseGuards(AuthGuard)
     @Get(':id')
     async getPatientById(@Param('id') id: string) {
         return await this.patientService.getPatientById(id);
     }
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
+    @UseGuards(AuthGuard)
     @Get()
     async getPatientByCpf(@Body() cpf: string) {
         return await this.patientService.getPatientByEmail(cpf);
     }
     @Get()
+    @UseGuards(AuthGuard)
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     async getPatientByEmail(@Body() email: string) {
         return await this.patientService.getPatientByEmail(email);
     }
     @UseGuards(ValidateIsUserSelfOrAdmin)
+    @UseGuards(AuthGuard)
     @Patch(':id')
     async updatePatient(@Param('id') id: string, @Body() updatePatientDto: UpdatePatientDto) {
         return await this.patientService.updatePatient(id, updatePatientDto);

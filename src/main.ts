@@ -46,10 +46,10 @@ async function bootstrap() {
     };
 
     const config = new DocumentBuilder()
-        .setTitle('Cats example')
-        .setDescription('The cats API description')
-        .setVersion('1.0')
-        .addTag('cats')
+        .setTitle('API Agenda Saúde')
+        .setDescription('Apresentação das rotas presentes em ambiente de produção')
+        .setVersion('0.01')
+        .addTag('agenda saude')
         .build();
 
     const document = SwaggerModule.createDocument(app, config, options);

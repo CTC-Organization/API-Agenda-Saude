@@ -54,13 +54,12 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
             const blobStream = blob.createWriteStream();
             const uploadPromise = new Promise<string>((resolve, reject) => {
                 blobStream.on('finish', async () => {
-                    // Define as permissões para o arquivo ser publicamente acessível
                     await blob.makePublic();
-                    const publicUrl = blob.publicUrl(); // publicUrl será retornado para inserir no DB
-                    resolve(publicUrl); // A stream se completou
+                    const publicUrl = blob.publicUrl();
+                    resolve(publicUrl);
                 });
                 blobStream.on('error', (err) => {
-                    reject(err); // A stream falhou
+                    reject(err);
                 });
             });
             blobStream.end(file.buffer); //
@@ -98,7 +97,6 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                 const uploadPromise = new Promise<string>((resolve, reject) => {
                     blobStream.on('finish', async () => {
                         try {
-                            // Define as permissões para o arquivo ser publicamente acessível
                             await blob.makePublic();
                             const publicUrl = blob.publicUrl();
                             resolve(publicUrl);
@@ -174,11 +172,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                 const blob = this.bucket.file(`${attachment.folder}/${attachment.name}`);
                 await blob.delete();
             });
-
-            // Aguarda a conclusão de todas as deleções dos arquivos
             await Promise.all(deleteFilePromises);
-
-            // Deletar os anexos do banco de dados
             await this.prisma.attachment.deleteMany({
                 where: { requestId },
             });
