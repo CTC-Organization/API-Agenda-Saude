@@ -9,7 +9,6 @@ import { RequestRepository } from '@/repositories/request.repository';
 @Injectable()
 export class AttachmentService {
     constructor(private attachmentRepository: AttachmentRepository) {}
-
     async createAttachment({
         file,
         attachmentType,

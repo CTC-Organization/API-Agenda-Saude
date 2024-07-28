@@ -45,9 +45,7 @@ export class RequestPrismaRepository implements RequestRepository {
                 folder: 'request_attachments',
             });
         }
-        console.log('passou da attachmentPrismaRepository.createAttachmentsOnRequestCreate');
-        await this.serviceTokenPrismaRepository.completeServiceToken(patientId);
-        console.log('passou da serviceTokenPrismaRepository.completeServiceTokenOnRequestCreate');
+        await this.serviceTokenPrismaRepository.completeServiceToken(patientId);;
         return request;
     }
     async updateRequest({ date, requestId }: UpdateRequestDto) {

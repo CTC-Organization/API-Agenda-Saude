@@ -27,6 +27,27 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
         const bucketName = this.envConfigService.getGoggleCloudBucketName();
         this.bucket = storage.bucket(bucketName);
     }
+    /*
+        Pega file(arquivo) via interceptors em qualquer controller,
+
+        AttachmentType é o "type" no ER de attachment. É o tipo de anexo por exemplo
+        anexo de requisição (REQUEST_ATTACHMENT) , 
+        (se vinherem posteriormente anexo de consulta, anexo de ficha de atendimento)
+
+        referenceId é no momento sempre preenchido com requestId (possívelmente pode ser 
+        preenchido com AppointmentId- consulta/exame, ServiceTokenId- ficha de atendimento, etc)
+
+        folder é uma string referente a pasta dentro do "Bucket" na Cloud storage que pode ser 
+        por exemplo a pasta 'request_attachments' (futuramente appointment_attachments, 
+        service_token_attachments, etc)
+
+        o método abaixo busca se existe uma request no banco para inserir um anexo na cloud
+        e posteriormente registrar os dados do anexo no DB
+        O blob se comunica com o "bucket: tipo Storage.Bucket do google" da cloud storage e faz a stream de escrita
+        deixando ele publico ao realizar a Promise para a posição correta na pasta específica 
+        com um nome único gerado por UUID no storage.
+        No fim o arquivo pode ser acessado publicamente pelo URL registrado no DB
+    */
     async createAttachment({ file, referenceId, attachmentType, folder }: CreateAttachmentDto) {
         try {
             if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
@@ -39,14 +60,14 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                 blobStream.on('finish', async () => {
                     // Define as permissões para o arquivo ser publicamente acessível
                     await blob.makePublic();
-                    const publicUrl = blob.publicUrl();
-                    resolve(publicUrl);
+                    const publicUrl = blob.publicUrl(); // publicUrl será retornado para inserir no DB
+                    resolve(publicUrl); // A stream se completou
                 });
                 blobStream.on('error', (err) => {
-                    reject(err);
+                    reject(err); // A stream falhou 
                 });
             });
-            blobStream.end(file.buffer);
+            blobStream.end(file.buffer); //
             const publicUrl = await uploadPromise;
 
             return await this.prisma.attachment.create({
@@ -63,64 +84,13 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
         }
     }
 
-    async createAttachmentsOnRequestCreate({
-        files,
-        attachmentType,
-        folder,
-        referenceId,
-    }: CreateAttachmentsDto) {
-        try {
-            console.log('chegou no upload Promise');
-            const uploadPromises = files.map(async (file) => {
-                const fileName = `${file.originalname}-${randomUUID()}`;
-                const blob = this.bucket.file(`${folder}/${fileName}}`);
-                const blobStream = blob.createWriteStream();
-
-                const uploadPromise = new Promise<string>((resolve, reject) => {
-                    blobStream.on('finish', async () => {
-                        // Define as permissões para o arquivo ser publicamente acessível
-                        await blob.makePublic();
-                        const publicUrl = blob.publicUrl();
-                        resolve(publicUrl);
-                    });
-                    blobStream.on('error', (err) => {
-                        reject(err);
-                    });
-                });
-
-                blobStream.end(file.buffer);
-
-                const publicUrl = await uploadPromise;
-
-                return { file, publicUrl };
-            });
-            console.log('chegou no upload Promise');
-            const uploadedFiles = await Promise.all(uploadPromises);
-            if (!!uploadedFiles) {
-                console.log('passou do upload Promise');
-            }
-            const attachmentCreatePromises = uploadedFiles.map(async ({ file, publicUrl }) => {
-                return this.prisma.attachment.create({
-                    data: {
-                        type: attachmentType,
-                        name: file.originalname,
-                        url: publicUrl,
-                        requestId: referenceId,
-                        folder: folder,
-                    },
-                });
-            });
-            console.log('chegou no attachments Promise');
-
-            const attachments = await Promise.all(attachmentCreatePromises);
-
-            console.log('passou do attachments Promise');
-
-            return attachments;
-        } catch (err) {
-            throw err;
-        }
-    }
+    /*
+        Semelhante a createAttachment, mas pega um array de arquivos por isso faz um
+        loop async tendo que usar o Promise.all para garantir que todos os uploads no
+        storage e os inserts no banco aconteçam. Lembrando que o upload e banco ainda
+        não estão trabalhando "atomicamente", se o upload for feito e o insert no db falhar
+        não quer dizer que os uploads serão desfeitos - futura melhoria
+    */
     async createAttachments({ files, referenceId, attachmentType, folder }: CreateAttachmentsDto) {
         try {
             if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
@@ -159,11 +129,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                 }
             });
 
-            console.log('chegou no upload Promise');
-
             const uploadedFiles = await Promise.all(uploadPromises);
-
-            console.log('passou do upload Promise');
 
             const attachmentCreatePromises = uploadedFiles.map(({ file, publicUrl }) => {
                 return this.prisma.attachment.create({
@@ -177,11 +143,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                     },
                 });
             });
-            console.log('chegou no attachments Promise');
-
             const attachments = await Promise.all(attachmentCreatePromises);
-
-            console.log('passou do attachments Promise');
 
             return attachments;
         } catch (err) {
