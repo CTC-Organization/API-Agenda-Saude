@@ -65,5 +65,5 @@ export class CreatePatientDto {
         example: 'UserRole.PATIENT: "PATIENT"',
         description: 'Usar apenas paciente por enquanto',
     })
-    role: UserRole = UserRole.PATIENT; // default role
+    role: UserRole = UserRole.PATIENT;
 }
