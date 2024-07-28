@@ -3,8 +3,10 @@ import { ServiceTokenService } from '../services/service-token.service';
 import { CreateServiceTokenDto } from '@/dto/create-service-token.dto';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
 import { AuthGuard } from '../commons/guards/auth.guard';
+import { ApiTags } from '@nestjs/swagger';
 
 @UseGuards(AuthGuard)
+@ApiTags('Fichas de atendimento: service-tokens')
 @Controller('service-tokens')
 export class ServiceTokenController {
     constructor(private readonly servicetokenService: ServiceTokenService) {}
@@ -18,7 +20,7 @@ export class ServiceTokenController {
     async findServiceTokenById(@Param('id') id: string) {
         return await this.servicetokenService.findServiceTokenById(id);
     }
-    @Get('list/:id')
+    @Get('patient-service-tokens/:id')
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     async listServiceTokensByPatientId(@Param('id') id: string) {
         return await this.servicetokenService.listServiceTokensByPatientId(id);

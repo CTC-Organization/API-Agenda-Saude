@@ -12,6 +12,7 @@ import {
     ParseFilePipe,
     UploadedFiles,
     UseInterceptors,
+    Req,
 } from '@nestjs/common';
 import { RequestService } from '../services/request.service';
 import { CreateRequestDto } from '@/dto/create-request.dto';
@@ -19,14 +20,18 @@ import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-s
 import { AuthGuard } from '../commons/guards/auth.guard';
 import { UpdateRequestDto } from '@/dto/update-request.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { UserInterceptor } from '@/commons/interceptors/user.interceptor';
+import { HttpArgumentsHost } from '@nestjs/common/interfaces';
+import { ApiTags } from '@nestjs/swagger';
 
 @UseGuards(AuthGuard)
+@UseInterceptors(UserInterceptor)
 @Controller('requests')
+@ApiTags('Requisições: requests')
 export class RequestController {
     constructor(private readonly requestService: RequestService) {}
 
-    @Post(':id')
-    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
+    @Post()
     @UseInterceptors(AnyFilesInterceptor())
     async createRequest(
         // parametro detectando para apenas esse id do patient/admin ou employee
@@ -40,7 +45,7 @@ export class RequestController {
             }),
         )
         files: Array<Express.Multer.File>,
-        @Param('id') patientId: string,
+        @Req() req: any,
         @Body()
         {
             date,
@@ -50,21 +55,22 @@ export class RequestController {
             serviceTokenId: string;
         },
     ) {
-        return await this.requestService.createRequest(files, { patientId, date, serviceTokenId });
+        return await this.requestService.createRequest(files, {
+            patientId: req.user.id,
+            date,
+            serviceTokenId,
+        });
     }
-    @Patch(':id')
-    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    async updateRequest(
-        @Param('id') patientId: string,
-        @Body() { date, requestId }: UpdateRequestDto,
-    ) {
-        return await this.requestService.updateRequest({ patientId, date, requestId });
+
+    @Patch()
+    async updateRequest(@Req() req: any, @Body() { date, requestId }: UpdateRequestDto) {
+        return await this.requestService.updateRequest({ patientId: req.user.id, date, requestId });
     }
     @Get(':id')
     async findRequestById(@Param('id') id: string) {
         return await this.requestService.findRequestById(id);
     }
-    @Get('list/:id')
+    @Get('patient-requests/:id')
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     async listRequestsByPatientId(@Param('id') id: string) {
         return await this.requestService.listRequestsByPatientId(id);

@@ -45,17 +45,17 @@ export class RequestPrismaRepository implements RequestRepository {
                 folder: 'request_attachments',
             });
         }
-        await this.serviceTokenPrismaRepository.completeServiceToken(patientId);;
+        await this.serviceTokenPrismaRepository.completeServiceToken(patientId);
         return request;
     }
     async updateRequest({ date, requestId }: UpdateRequestDto) {
+        const data: any = {};
+        if (!!date) data.date = new Date(date);
         return await this.prisma.request.update({
             where: {
                 id: requestId,
             },
-            data: {
-                date,
-            },
+            data,
         });
     }
     async completeRequest(patientId: string): Promise<any> {

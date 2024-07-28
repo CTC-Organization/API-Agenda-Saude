@@ -16,6 +16,7 @@ export class UserPrismaRepository implements UserRepository {
         name,
         phoneNumber,
         role,
+        birthDate,
     }: CreateUserDto): Promise<User> {
         const user = await this.prisma.user.create({
             data: {
@@ -25,6 +26,7 @@ export class UserPrismaRepository implements UserRepository {
                 name,
                 phoneNumber,
                 role,
+                birthDate: new Date(birthDate),
             },
         });
 
@@ -39,7 +41,7 @@ export class UserPrismaRepository implements UserRepository {
                 email,
             },
         });
-        if(!user) throw new NotFoundException("Usuário não encontrado")
+        if (!user) throw new NotFoundException('Usuário não encontrado');
         delete user.password;
 
         return user;
@@ -51,7 +53,7 @@ export class UserPrismaRepository implements UserRepository {
                 cpf,
             },
         });
-        if(!user) throw new NotFoundException("Usuário não encontrado")
+        if (!user) throw new NotFoundException('Usuário não encontrado');
         delete user.password;
         return user;
     }
@@ -63,7 +65,7 @@ export class UserPrismaRepository implements UserRepository {
         if (!user) {
             throw new NotFoundException('Usuário não encontrado');
         }
-        if(!user) throw new NotFoundException("Usuário não encontrado")
+        if (!user) throw new NotFoundException('Usuário não encontrado');
         delete user.password;
         return user;
     }
@@ -71,23 +73,25 @@ export class UserPrismaRepository implements UserRepository {
         id,
         email,
         password,
-        cpf,
         name,
         phoneNumber,
-        role,
+        birthDate,
     }: UpdateUserDto): Promise<User | null> {
+        const userData: any = {
+            email,
+            password,
+            name,
+            phoneNumber,
+        };
+
+        if (!!birthDate) {
+            userData.birthDate = new Date(birthDate);
+        }
         const result = await this.prisma.user.update({
             where: {
                 id,
             },
-            data: {
-                email,
-                password,
-                cpf,
-                name,
-                phoneNumber,
-                role,
-            },
+            data: userData,
         });
         if (!result) {
             throw new NotFoundException('Usuário não encontrado');

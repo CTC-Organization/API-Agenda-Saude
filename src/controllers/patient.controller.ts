@@ -5,7 +5,9 @@ import { UpdatePatientDto } from '@/dto/update-patient.dto';
 import { ValidateIsUserSelfOrAdmin } from '../commons/guards/validate-self-or-admin.guard';
 import { AuthGuard } from '../commons/guards/auth.guard';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Pacientes: patients')
 @Controller('patients')
 export class PatientController {
     constructor(private readonly patientService: PatientService) {}

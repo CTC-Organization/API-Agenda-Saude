@@ -20,7 +20,9 @@ import { AttachmentService } from '@/services/attachment.service';
 import { AuthGuard } from '@/commons/guards/auth.guard';
 import { AttachmentType } from '@prisma/client';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Anexos: attachments')
 @Controller('attachments')
 @UseGuards(AuthGuard)
 export class AttachmentController {

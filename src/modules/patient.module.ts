@@ -12,7 +12,7 @@ import { AuthModule } from './auth.module';
     providers: [
         PatientService,
         PrismaService,
-        PatientPrismaRepository, // Adicionado aos providers
+        PatientPrismaRepository,
         {
             provide: PatientRepository,
             useClass: PatientPrismaRepository,

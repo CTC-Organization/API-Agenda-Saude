@@ -7,6 +7,8 @@ export interface CreatePatient {
     name?: string;
     phoneNumber?: string;
     role?: UserRole;
+    birthDate?: string;
+    susNumber: string;
 }
 
 export interface Patient {

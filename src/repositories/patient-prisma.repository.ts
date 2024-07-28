@@ -19,6 +19,8 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
         name,
         phoneNumber,
         role,
+        birthDate,
+        susNumber,
     }: CreatePatient): Promise<Patient> {
         return await this.prisma.$transaction(async (prisma) => {
             const newUser = await prisma.user.create({
@@ -29,20 +31,24 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                     name,
                     phoneNumber,
                     role,
+                    birthDate: new Date(birthDate),
                 },
             });
             const newPatient = await prisma.patient.create({
                 data: {
                     userId: newUser.id,
+                    susNumber,
                 },
             });
             return {
                 id: newPatient.id,
                 cpf: newUser.cpf,
-                email: newUser.email || '', // Garante que o email nunca seja undefined
-                name: newUser.name || '', // Garante que o name nunca seja undefined
-                phoneNumber: newUser.phoneNumber || '', // Garante que o phoneNumber nunca seja undefined
-                role: newUser.role || UserRole.PATIENT, // Assume um valor padrão para role se não fornecido
+                email: newUser.email || '',
+                name: newUser.name || '',
+                phoneNumber: newUser.phoneNumber || '',
+                role: newUser.role || UserRole.PATIENT,
+                susNumber: newPatient.susNumber,
+                birthDate: new Date(newUser.birthDate),
             };
         });
     }
@@ -98,6 +104,17 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
     }
     async updatePatient(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient | null> {
         const { email, password, name, phoneNumber, birthDate, susNumber } = updatePatientDto;
+
+        const userData: any = {
+            email,
+            password,
+            name,
+            phoneNumber,
+        };
+
+        if (!!birthDate) {
+            userData.birthDate = new Date(birthDate);
+        }
         return await this.prisma.$transaction(async (prisma) => {
             const patient = await prisma.patient.findUnique({
                 where: {
@@ -109,13 +126,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 where: {
                     id: patient.userId,
                 },
-                data: {
-                    email,
-                    password,
-                    name,
-                    phoneNumber,
-                    birthDate,
-                },
+                data: userData,
             });
             await prisma.patient.update({
                 where: {

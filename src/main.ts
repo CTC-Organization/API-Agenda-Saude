@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ForbiddenException, Logger, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './modules/app.module';
+import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
     const logger = new Logger(AppModule.name);
@@ -39,6 +40,21 @@ async function bootstrap() {
     });
 
     app.useGlobalPipes(validationPipe);
+
+    const options: SwaggerDocumentOptions = {
+        operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+    };
+
+    const config = new DocumentBuilder()
+        .setTitle('Cats example')
+        .setDescription('The cats API description')
+        .setVersion('1.0')
+        .addTag('cats')
+        .build();
+
+    const document = SwaggerModule.createDocument(app, config, options);
+
+    SwaggerModule.setup('api', app, document);
 
     await app.listen(process.env.PORT || 8080);
 

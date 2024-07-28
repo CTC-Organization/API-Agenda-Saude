@@ -8,7 +8,7 @@ import { excludeFieldsInEntity } from '../utils/exclude-fields';
 export class UserService {
     constructor(private userRepository: UserRepository) {}
 
-    async createUser({ email, password, cpf, name, phoneNumber, role }: CreateUserDto) {
+    async createUser({ email, password, cpf, name, phoneNumber, role, birthDate }: CreateUserDto) {
         if (await this.userRepository.findUserByEmail(email)) {
             throw new BadRequestException('Email indisponível');
         } else if (await this.userRepository.findUserByCpf(cpf)) {
@@ -23,6 +23,7 @@ export class UserService {
             name,
             phoneNumber,
             role,
+            birthDate,
         });
 
         excludeFieldsInEntity(user, 'password');
