@@ -47,25 +47,10 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         });
         if (!result?.length)
             throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
-        const serviceToken = result[0];
-        const updatedServiceToken = await this.findServiceTokenById(serviceToken.id);
-        if (updatedServiceToken.status !== ServiceStatus.PENDING) {
-            throw new BadRequestException('Essa ficha de atendimento não está disponível');
-        }
-        const isAllowedToCancelBody = isBeforeFiveBusinessDays(
-            new Date(updatedServiceToken.expirationDate),
-        );
-        if (!isAllowedToCancelBody.isBeforeFiveBusinessDays) {
-            throw new NotFoundException(
-                `Não foi possível cancelar a requisição a menos de 5 dias úteis. Limite de cancelamento: ${formatDateToBrazilian(
-                    isAllowedToCancelBody.dateFiveBusinessDaysAgo,
-                )}`,
-            );
-        }
 
         return await this.prisma.serviceToken.update({
             where: {
-                id: updatedServiceToken.id,
+                id: result[0].id,
             },
             data: {
                 status: ServiceStatus.CANCELLED,
