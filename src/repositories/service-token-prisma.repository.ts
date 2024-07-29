@@ -1,11 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { UserPrismaRepository } from './user-prisma.repository';
 import { PrismaService } from '../services/prisma.service';
 import { ServiceTokenRepository } from './service-token.repository';
 import { CreateServiceTokenDto } from '../dto/create-service-token.dto';
-import { Prisma, ServiceStatus, ServiceToken } from '@prisma/client';
+import { ServiceStatus } from '@prisma/client';
 import { PatientPrismaRepository } from './patient-prisma.repository';
-import { date } from 'zod';
+import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';
 
 @Injectable()
 export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
@@ -13,34 +12,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         private prisma: PrismaService,
         private patientRepository: PatientPrismaRepository,
     ) {}
-
-    async completeServiceTokenOnRequestCreate(
-        tx: Prisma.TransactionClient,
-        patientId: string,
-    ): Promise<any> {
-        const result = await tx.serviceToken.findMany({
-            where: {
-                status: ServiceStatus.PENDING,
-                patientId,
-            },
-            include: {
-                requests: true,
-            },
-        });
-        if (!result?.length)
-            throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
-
-        return await tx.serviceToken.updateMany({
-            where: {
-                status: ServiceStatus.PENDING,
-                patientId,
-            },
-            data: {
-                status: ServiceStatus.COMPLETED,
-            },
-        });
-    }
-    async completeServiceToken(patientId: string): Promise<any> {
+    async completeServiceTokenByPatientId(patientId: string): Promise<any> {
         const result = await this.prisma.serviceToken.findMany({
             where: {
                 status: ServiceStatus.PENDING,
@@ -63,7 +35,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
             },
         });
     }
-    async cancelServiceToken(patientId: string): Promise<any> {
+    async cancelServiceTokenByPatientId(patientId: string): Promise<any> {
         const result = await this.prisma.serviceToken.findMany({
             where: {
                 status: ServiceStatus.PENDING,
@@ -75,18 +47,32 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         });
         if (!result?.length)
             throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
+        const serviceToken = result[0];
+        const updatedServiceToken = await this.findServiceTokenById(serviceToken.id);
+        if (updatedServiceToken.status !== ServiceStatus.PENDING) {
+            throw new BadRequestException('Essa ficha de atendimento não está disponível');
+        }
+        const isAllowedToCancelBody = isBeforeFiveBusinessDays(
+            new Date(updatedServiceToken.expirationDate),
+        );
+        if (!isAllowedToCancelBody.isBeforeFiveBusinessDays) {
+            throw new NotFoundException(
+                `Não foi possível cancelar a requisição a menos de 5 dias úteis. Limite de cancelamento: ${formatDateToBrazilian(
+                    isAllowedToCancelBody.dateFiveBusinessDaysAgo,
+                )}`,
+            );
+        }
 
-        return await this.prisma.serviceToken.updateMany({
+        return await this.prisma.serviceToken.update({
             where: {
-                status: ServiceStatus.PENDING,
-                patientId,
+                id: updatedServiceToken.id,
             },
             data: {
                 status: ServiceStatus.CANCELLED,
             },
         });
     }
-    async createServiceToken({ patientId }: CreateServiceTokenDto) {
+    async createServiceToken({ patientId, expirationDate }: CreateServiceTokenDto) {
         try {
             const patient = await this.patientRepository.findPatientById(patientId);
             if (!patient) throw new BadRequestException('Paciente não encontrado');
@@ -107,7 +93,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
             return await this.prisma.serviceToken.create({
                 data: {
                     patientId,
-                    expirationDate: new Date(new Date().getTime() + 1000 * 60 * 60 * 24), // expira em 1 dia
+                    expirationDate,
                 },
             });
         } catch (err) {
@@ -123,7 +109,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
                 requests: true,
             },
         });
-        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 2');
+        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada');
         if (
             result.status === ServiceStatus.PENDING &&
             new Date(result.expirationDate) < new Date()
@@ -148,7 +134,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
                 requests: true,
             },
         });
-        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 3');
+        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada');
         if (result?.length) {
             const now = new Date();
             const filteredServiceTokensIds = result

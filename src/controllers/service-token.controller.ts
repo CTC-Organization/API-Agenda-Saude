@@ -11,29 +11,37 @@ import { ApiTags } from '@nestjs/swagger';
 export class ServiceTokenController {
     constructor(private readonly servicetokenService: ServiceTokenService) {}
 
-    @Post(':id')
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    async createServiceToken(@Param('id') id: string) {
-        return await this.servicetokenService.createServiceToken(id);
+    @Get('patient-service-tokens/:id')
+    async listServiceTokensByPatientId(@Param('id') id: string) {
+        return await this.servicetokenService.listServiceTokensByPatientId(id);
     }
     @Get(':id')
     async findServiceTokenById(@Param('id') id: string) {
         return await this.servicetokenService.findServiceTokenById(id);
     }
-    @Get('patient-service-tokens/:id')
+
+    @Post(':id')
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    async listServiceTokensByPatientId(@Param('id') id: string) {
-        return await this.servicetokenService.listServiceTokensByPatientId(id);
+    async createServiceToken(
+        @Param('id') id: string,
+        @Body() { expirationDate }: { expirationDate: string },
+    ) {
+        return await this.servicetokenService.createServiceToken({
+            patientId: id,
+            expirationDate: expirationDate,
+        });
     }
+
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Patch('cancel/:id')
-    async cancelServiceToken(@Param('id') id: string) {
-        return await this.servicetokenService.cancelServiceToken(id);
+    async cancelServiceTokenByPatientId(@Param('id') id: string) {
+        return await this.servicetokenService.cancelServiceTokenByPatientId(id);
     }
 
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @Patch('complete/:id')
-    async completeServiceToken(@Param('id') id: string) {
-        return await this.servicetokenService.completeServiceToken(id);
+    async completeServiceTokenByPatientId(@Param('id') id: string) {
+        return await this.servicetokenService.completeServiceTokenByPatientId(id);
     }
 }

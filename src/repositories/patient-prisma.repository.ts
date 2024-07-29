@@ -99,7 +99,10 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 user: true,
             },
         });
-        if (!!result?.user) delete result.user.password;
+        if (!!result?.user) {
+            delete result.user.password;
+            delete result.user.id;
+        }
         return { id, ...result.user };
     }
     async updatePatient(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient | null> {

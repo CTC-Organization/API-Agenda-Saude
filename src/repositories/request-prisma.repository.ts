@@ -7,6 +7,7 @@ import { AttachmentType, RequestStatus } from '@prisma/client';
 import { UpdateRequestDto } from '../dto/update-request.dto';
 import { AttachmentPrismaRepository } from './attachment-prisma.repository';
 import { ServiceTokenPrismaRepository } from './service-token-prisma.repository';
+import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';
 
 @Injectable()
 export class RequestPrismaRepository implements RequestRepository {
@@ -37,7 +38,7 @@ export class RequestPrismaRepository implements RequestRepository {
                 folder: 'request_attachments',
             });
         }
-        await this.serviceTokenPrismaRepository.completeServiceToken(patientId);
+        await this.serviceTokenPrismaRepository.completeServiceTokenByPatientId(patientId);
         return request;
     }
     async updateRequest({ date, requestId }: UpdateRequestDto) {
@@ -50,45 +51,44 @@ export class RequestPrismaRepository implements RequestRepository {
             data,
         });
     }
-    async completeRequest(patientId: string): Promise<any> {
-        const result = await this.prisma.request.findMany({
+    async completeRequest(requestId: string): Promise<any> {
+        const result = await this.prisma.request.findUnique({
             where: {
-                status: RequestStatus.PENDING,
-                patientId,
-            },
-            include: {
-                serviceToken: true,
+                id: requestId,
             },
         });
-        if (!result?.length) throw new NotFoundException('Nenhuma requisição foi achada');
+        if (!result) throw new NotFoundException('Nenhuma requisição foi achada');
 
-        return await this.prisma.request.updateMany({
+        return await this.prisma.request.update({
             where: {
-                status: RequestStatus.PENDING,
-                patientId,
+                id: requestId,
             },
             data: {
                 status: RequestStatus.COMPLETED,
             },
         });
     }
-    async cancelRequest(patientId: string): Promise<any> {
-        const result = await this.prisma.request.findMany({
+    async cancelRequest(requestId: string): Promise<any> {
+        const result = await this.prisma.request.findUnique({
             where: {
-                status: RequestStatus.PENDING,
-                patientId,
-            },
-            include: {
-                serviceToken: true,
+                id: requestId,
             },
         });
-        if (!result?.length)
+        if (!result)
             throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
+        const isAllowedToCancelBody = isBeforeFiveBusinessDays(new Date(result.date));
+        if (!isAllowedToCancelBody.isBeforeFiveBusinessDays) {
+            throw new NotFoundException(
+                `Não foi possível cancelar a requisição a menos de 5 dias úteis.
+                Limite de cancelamento: ${formatDateToBrazilian(
+                    isAllowedToCancelBody.dateFiveBusinessDaysAgo,
+                )}`,
+            );
+        }
 
-        return await this.prisma.request.updateMany({
+        return await this.prisma.request.update({
             where: {
-                status: RequestStatus.PENDING,
-                patientId,
+                id: requestId,
             },
             data: {
                 status: RequestStatus.CANCELLED,
@@ -132,7 +132,7 @@ export class RequestPrismaRepository implements RequestRepository {
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 5');
 
         if (result?.length) {
-            const now = new Date(); // agora
+            const now = new Date(); // agora'
             const filteredRequestsIds = result
                 .filter((r) => r.status === RequestStatus.PENDING && new Date(r.date) < now) // expirationDate === agora então não filtra
                 .map((x) => x.id);
