@@ -1,0 +1,75 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/mongodb-client"
+}
+model Usf {
+  id                 String   @id @default(auto()) @map("_id") @db.ObjectId()
+  usfId              Int      @map("usf_id")
+  nome_oficial       String
+  rpa                Int
+  distrito_sanitario Int
+  microregiao        Float
+  cnes               Int
+  cod_nat            String
+  tipo_servico       String
+  endereco           String
+  bairro             String
+  fone               String
+  servico            String
+  especialidade      String
+  como_usar          String
+  horario            String
+  ordem              String
+  latitude           String
+  longitude          Float
+  cityHall           CityHall @relation(fields: [cityHallId], references: [id])
+  cityHallId         String   @map("city_hall_id") @db.ObjectId
+
+  @@map("usfs")
+}
+
+model CityHall {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String
+  state BrazilianState
+  usfs   Usf[]
+
+  @@map("city_halls")
+}
+
+enum BrazilianState {
+  AC
+  AL
+  AM
+  AP
+  BA
+  CE
+  DF
+  ES
+  GO
+  MA
+  MG
+  MS
+  MT
+  PA
+  PB
+  PE
+  PI
+  PR
+  RJ
+  RN
+  RO
+  RR
+  RS
+  SC
+  SE
+  SP
+  TO
+}

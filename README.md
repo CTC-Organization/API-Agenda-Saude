@@ -34,6 +34,8 @@
     -   Instalar PNPM: [Guia de Instalação](https://pnpm.io/pt/installation)
     -   Usar PNPM para instalar pacotes
     -   usar npx prisma generate na primeira vez com o banco de dados funcionando
+        atualmente: npx prisma generate --schema=prisma/mongodb/schema.prisma (mongo)
+                    e  npx prisma generate --schema=prisma/schema.prisma (postgres)
     -   usar npx prisma migrate dev para atualizar o banco
 
 **Para rodar:**
@@ -56,6 +58,8 @@
     -   Instalar PNPM: [Guia de Instalação](https://pnpm.io/pt/installation)
     -   Usar PNPM para instalar pacotes
     -   usar npx prisma generate na primeira vez com o banco de dados funcionando
+        atualmente: npx prisma generate --schema=prisma/mongodb/schema.prisma (mongo)
+                e  npx prisma generate --schema=prisma/schema.prisma (postgres)
     -   usar npx prisma migrate dev para atualizar o banco
 
 **Para rodar:**

@@ -1,7 +1,7 @@
 import { CreateAttachmentDto } from '../dto/create-attachment.dto';
 import { CreateAttachmentsOnRequestDto } from '@/dto/create-attachments-on-request.dto';
 import { CreateAttachmentsDto } from '../dto/create-attachments.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/postgres-client';
 
 export abstract class AttachmentRepository {
     abstract createAttachment(createAttachmentDto: CreateAttachmentDto): Promise<any>;

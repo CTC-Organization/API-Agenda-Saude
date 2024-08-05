@@ -4,7 +4,7 @@ import { RequestRepository } from '@/repositories/request.repository';
 import { ServiceTokenRepository } from '@/repositories/service-token.repository';
 import { PatientRepository } from '@/repositories/patient.repository';
 import { UpdateRequestDto } from '@/dto/update-request.dto';
-import { ServiceStatus } from '@prisma/client';
+import { ServiceStatus } from '@prisma/postgres-client';
 
 @Injectable()
 export class RequestService {

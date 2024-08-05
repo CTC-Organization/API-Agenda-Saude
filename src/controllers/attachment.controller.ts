@@ -18,7 +18,7 @@ import {
 import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { AttachmentService } from '@/services/attachment.service';
 import { AuthGuard } from '@/commons/guards/auth.guard';
-import { AttachmentType } from '@prisma/client';
+import { AttachmentType } from '@prisma/postgres-client';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
 import { ApiTags } from '@nestjs/swagger';
 

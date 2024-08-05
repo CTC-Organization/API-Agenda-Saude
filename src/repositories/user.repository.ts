@@ -1,4 +1,4 @@
-import { User } from '@prisma/client';
+import { User } from '@prisma/postgres-client';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UpdateUserDto } from '../dto/update-user.dto';
 

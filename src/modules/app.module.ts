@@ -10,6 +10,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { RoleGuard } from '../commons/guards/role.guard';
 import { AttachmentModule } from './attachment.module';
 import { RequestModule } from './request.module';
+import { MongoModule } from './mongo-prisma.module';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { RequestModule } from './request.module';
         JwtModule,
         AuthModule,
         DatabaseModule,
+        MongoModule,
         UserModule,
         PatientModule,
         ServiceTokenModule,

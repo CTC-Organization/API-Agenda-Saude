@@ -4,21 +4,21 @@ import { AuthType } from '@/types/auth.type';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import * as dayjs from 'dayjs';
-import { User, UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/postgres-client';
 import { PatientService } from './patient.service';
 import { PrismaService } from './prisma.service';
 
 @Injectable()
 export class AuthService {
     constructor(
-        private readonly prismaService: PrismaService,
+        private readonly prisma: PrismaService,
         private readonly patientService: PatientService,
         private readonly jwtService: JwtService,
     ) {}
 
     async login(loginInputDto: LoginInputDto): Promise<AuthType> {
         const { cpf, password } = loginInputDto;
-        const user = await this.prismaService.user.findUnique({
+        const user = await this.prisma.client.user.findUnique({
             where: {
                 cpf,
             },

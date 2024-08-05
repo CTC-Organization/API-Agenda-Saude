@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthService } from '../../services/auth.service';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/postgres-client';
 @Injectable()
 export class ValidateIsUserSelfOrAdminOrEmployee implements CanActivate {
     constructor(private readonly authService: AuthService) {}

@@ -1,4 +1,4 @@
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/postgres-client';
 
 export interface CreatePatient {
     cpf: string;

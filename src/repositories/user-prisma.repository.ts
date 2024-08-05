@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './user.repository';
 import { PrismaService } from '@/services/prisma.service';
-import { User } from '@prisma/client';
+import { User } from '@prisma/postgres-client';
 import { UpdateUserDto } from '@/dto/update-user.dto';
 import { CreateUserDto } from '@/dto/create-user.dto';
 
@@ -18,7 +18,7 @@ export class UserPrismaRepository implements UserRepository {
         role,
         birthDate,
     }: CreateUserDto): Promise<User> {
-        const user = await this.prisma.user.create({
+        const user = await this.prisma.client.user.create({
             data: {
                 email,
                 password,
@@ -36,7 +36,7 @@ export class UserPrismaRepository implements UserRepository {
     }
 
     async findUserByEmail(email: string): Promise<User | null> {
-        const user = await this.prisma.user.findFirst({
+        const user = await this.prisma.client.user.findFirst({
             where: {
                 email,
             },
@@ -48,7 +48,7 @@ export class UserPrismaRepository implements UserRepository {
     }
 
     async findUserByCpf(cpf: string): Promise<User | null> {
-        const user = await this.prisma.user.findFirst({
+        const user = await this.prisma.client.user.findFirst({
             where: {
                 cpf,
             },
@@ -58,7 +58,7 @@ export class UserPrismaRepository implements UserRepository {
         return user;
     }
     async findUserById(id: string): Promise<User> {
-        const user = await this.prisma.user.findUnique({
+        const user = await this.prisma.client.user.findUnique({
             where: { id },
         });
 
@@ -87,7 +87,7 @@ export class UserPrismaRepository implements UserRepository {
         if (!!birthDate) {
             userData.birthDate = new Date(birthDate);
         }
-        const result = await this.prisma.user.update({
+        const result = await this.prisma.client.user.update({
             where: {
                 id,
             },

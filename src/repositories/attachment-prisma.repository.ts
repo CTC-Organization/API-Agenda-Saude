@@ -2,12 +2,13 @@ import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/commo
 import { PrismaService } from '../services/prisma.service';
 import { AttachmentRepository } from './attachment.repository';
 import { CreateAttachmentDto } from '../dto/create-attachment.dto';
-import { Attachment, AttachmentType, Prisma } from '@prisma/client';
+import {Attachment, AttachmentType, Prisma } from '@prisma/postgres-client';
 import { EnvConfigService } from '../services/env-config.service';
 import { randomUUID } from 'crypto';
 import { CreateAttachmentsDto } from '../dto/create-attachments.dto';
 import { RequestPrismaRepository } from './request-prisma.repository';
 import { Bucket, Storage } from '@google-cloud/storage';
+
 
 @Injectable()
 export class AttachmentPrismaRepository implements AttachmentRepository {
@@ -66,7 +67,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
             blobStream.end(file.buffer);
             const publicUrl = await uploadPromise;
 
-            return await this.prisma.attachment.create({
+            return await this.prisma.client.attachment.create({
                 data: {
                     type: attachmentType,
                     name: fileName,
@@ -129,7 +130,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
             const uploadedFiles = await Promise.all(uploadPromises);
 
             const attachmentCreatePromises = uploadedFiles.map(({ file, publicUrl }) => {
-                return this.prisma.attachment.create({
+                return this.prisma.client.attachment.create({
                     data: {
                         id: randomUUID(),
                         type: attachmentType,
@@ -148,19 +149,19 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
         }
     }
     async findAttachmentById(id: string): Promise<Attachment | null> {
-        return this.prisma.attachment.findUnique({
+        return this.prisma.client.attachment.findUnique({
             where: { id },
         });
     }
     async findAllAttachmentsByRequestId(referenceId: string): Promise<Attachment[]> {
-        return this.prisma.attachment.findMany({
+        return this.prisma.client.attachment.findMany({
             where: { requestId: referenceId },
         });
     }
 
     async deleteAttachments(attachmentIds: Array<string>): Promise<void> {
         try {
-            const attachments = await this.prisma.attachment.findMany({
+            const attachments = await this.prisma.client.attachment.findMany({
                 where: {
                     id: {
                         in: attachmentIds,
@@ -176,7 +177,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                 await blob.delete();
             });
             await Promise.all(deleteFilePromises);
-            await this.prisma.attachment.deleteMany({
+            await this.prisma.client.attachment.deleteMany({
                 where: {
                     id: {
                         in: attachmentIds,
@@ -191,7 +192,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
     async deleteAttachmentsByRequestId(requestId: string): Promise<void> {
         try {
-            const attachments = await this.prisma.attachment.findMany({
+            const attachments = await this.prisma.client.attachment.findMany({
                 where: { requestId },
             });
             if (attachments.length === 0) {
@@ -209,7 +210,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                 await blob.delete();
             });
             await Promise.all(deleteFilePromises);
-            await this.prisma.attachment.deleteMany({
+            await this.prisma.client.attachment.deleteMany({
                 where: { requestId },
             });
         } catch (err) {
@@ -219,7 +220,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
     }
     async deleteAttachment(attachmentId: string): Promise<void> {
         try {
-            const attachment = await this.prisma.attachment.findUnique({
+            const attachment = await this.prisma.client.attachment.findUnique({
                 where: { id: attachmentId },
             });
 
@@ -230,7 +231,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
             await blob.delete();
 
-            await this.prisma.attachment.delete({
+            await this.prisma.client.attachment.delete({
                 where: { id: attachmentId },
             });
         } catch (err) {

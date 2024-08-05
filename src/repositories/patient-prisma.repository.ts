@@ -4,7 +4,7 @@ import { PrismaService } from '../services/prisma.service';
 import { PatientRepository } from './patient.repository';
 import { CreatePatient, Patient } from '../interfaces/patient';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/postgres-client';
 
 @Injectable()
 export class PatientPrismaRepository extends UserPrismaRepository implements PatientRepository {
@@ -22,7 +22,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
         birthDate,
         susNumber,
     }: CreatePatient): Promise<Patient> {
-        return await this.prisma.$transaction(async (prisma) => {
+        return await this.prisma.client.$transaction(async (prisma) => {
             const newUser = await prisma.user.create({
                 data: {
                     email,
@@ -54,7 +54,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
     }
 
     async findPatientByEmail(email: string): Promise<Patient | null> {
-        const result = await this.prisma.user.findFirst({
+        const result = await this.prisma.client.user.findFirst({
             where: {
                 email,
             },
@@ -73,7 +73,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
     }
 
     async findPatientByCpf(cpf: string): Promise<Patient | null> {
-        const result = await this.prisma.user.findFirst({
+        const result = await this.prisma.client.user.findFirst({
             where: {
                 cpf,
             },
@@ -91,7 +91,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
         return result;
     }
     async findPatientById(id: string): Promise<Patient | null> {
-        const result = await this.prisma.patient.findFirst({
+        const result = await this.prisma.client.patient.findFirst({
             where: {
                 id,
             },
@@ -118,7 +118,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
         if (!!birthDate) {
             userData.birthDate = new Date(birthDate);
         }
-        return await this.prisma.$transaction(async (prisma) => {
+        return await this.prisma.client.$transaction(async (prisma) => {
             const patient = await prisma.patient.findUnique({
                 where: {
                     id,
