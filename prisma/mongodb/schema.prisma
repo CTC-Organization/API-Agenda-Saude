@@ -9,6 +9,7 @@ generator client {
   provider = "prisma-client-js"
   output   = "../../node_modules/@prisma/mongodb-client"
 }
+
 model Usf {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId()
   usfId              Int      @map("usf_id")
@@ -36,10 +37,10 @@ model Usf {
 }
 
 model CityHall {
-  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  id    String         @id @default(auto()) @map("_id") @db.ObjectId
   name  String
   state BrazilianState
-  usfs   Usf[]
+  usfs  Usf[]
 
   @@map("city_halls")
 }

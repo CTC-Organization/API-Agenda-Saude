@@ -28,7 +28,7 @@ import { ApiTags } from '@nestjs/swagger';
 export class AttachmentController {
     constructor(private readonly attachmentService: AttachmentService) {}
 
-    @Get('/attachment-by-request')
+    @Get('attachment-by-request')
     async findAllAttachmentsByRequestId(@Query() referenceId: string) {
         return await this.attachmentService.findAllAttachmentsByRequestId(referenceId);
     }
@@ -59,7 +59,7 @@ export class AttachmentController {
             folder,
         });
     }
-    @Post('/multiple-attachments')
+    @Post('multiple-attachments')
     @UseInterceptors(AnyFilesInterceptor())
     async createAttachments(
         @UploadedFiles(
@@ -85,16 +85,16 @@ export class AttachmentController {
             folder,
         });
     }
-    @Delete()
-    async deleteAttachment(@Body() attachmentId: string) {
+    @Delete(':id')
+    async deleteAttachment(@Param('id') attachmentId: string) {
         return await this.attachmentService.deleteAttachment(attachmentId);
     }
-    @Delete('/multiple-attachments')
+    @Delete('multiple-attachments')
     async deleteAttachments(@Body() attachmentIds: Array<string>) {
         return await this.attachmentService.deleteAttachments(attachmentIds);
     }
-    @Delete('/by-request')
-    async deleteAttachmentsByRequestId(@Body() requestId: string) {
+    @Delete('by-request/:id')
+    async deleteAttachmentsByRequestId(@Param('id') requestId: string) {
         return await this.attachmentService.deleteAttachmentsByRequestId(requestId);
     }
 }

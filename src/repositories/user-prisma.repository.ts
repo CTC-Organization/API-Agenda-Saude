@@ -18,7 +18,7 @@ export class UserPrismaRepository implements UserRepository {
         role,
         birthDate,
     }: CreateUserDto): Promise<User> {
-        const user = await this.prisma.client.user.create({
+        const user = await this.prisma.user.create({
             data: {
                 email,
                 password,
@@ -36,7 +36,7 @@ export class UserPrismaRepository implements UserRepository {
     }
 
     async findUserByEmail(email: string): Promise<User | null> {
-        const user = await this.prisma.client.user.findFirst({
+        const user = await this.prisma.user.findFirst({
             where: {
                 email,
             },
@@ -48,7 +48,7 @@ export class UserPrismaRepository implements UserRepository {
     }
 
     async findUserByCpf(cpf: string): Promise<User | null> {
-        const user = await this.prisma.client.user.findFirst({
+        const user = await this.prisma.user.findFirst({
             where: {
                 cpf,
             },
@@ -58,7 +58,7 @@ export class UserPrismaRepository implements UserRepository {
         return user;
     }
     async findUserById(id: string): Promise<User> {
-        const user = await this.prisma.client.user.findUnique({
+        const user = await this.prisma.user.findUnique({
             where: { id },
         });
 
@@ -87,7 +87,7 @@ export class UserPrismaRepository implements UserRepository {
         if (!!birthDate) {
             userData.birthDate = new Date(birthDate);
         }
-        const result = await this.prisma.client.user.update({
+        const result = await this.prisma.user.update({
             where: {
                 id,
             },

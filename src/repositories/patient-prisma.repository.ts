@@ -22,7 +22,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
         birthDate,
         susNumber,
     }: CreatePatient): Promise<Patient> {
-        return await this.prisma.client.$transaction(async (prisma) => {
+        return await this.prisma.$transaction(async (prisma) => {
             const newUser = await prisma.user.create({
                 data: {
                     email,
@@ -54,7 +54,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
     }
 
     async findPatientByEmail(email: string): Promise<Patient | null> {
-        const result = await this.prisma.client.user.findFirst({
+        const result = await this.prisma.user.findFirst({
             where: {
                 email,
             },
@@ -73,7 +73,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
     }
 
     async findPatientByCpf(cpf: string): Promise<Patient | null> {
-        const result = await this.prisma.client.user.findFirst({
+        const result = await this.prisma.user.findFirst({
             where: {
                 cpf,
             },
@@ -91,7 +91,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
         return result;
     }
     async findPatientById(id: string): Promise<Patient | null> {
-        const result = await this.prisma.client.patient.findFirst({
+        const result = await this.prisma.patient.findFirst({
             where: {
                 id,
             },
@@ -118,7 +118,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
         if (!!birthDate) {
             userData.birthDate = new Date(birthDate);
         }
-        return await this.prisma.client.$transaction(async (prisma) => {
+        return await this.prisma.$transaction(async (prisma) => {
             const patient = await prisma.patient.findUnique({
                 where: {
                     id,

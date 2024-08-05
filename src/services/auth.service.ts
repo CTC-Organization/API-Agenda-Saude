@@ -18,7 +18,7 @@ export class AuthService {
 
     async login(loginInputDto: LoginInputDto): Promise<AuthType> {
         const { cpf, password } = loginInputDto;
-        const user = await this.prisma.client.user.findUnique({
+        const user = await this.prisma.user.findUnique({
             where: {
                 cpf,
             },
@@ -34,11 +34,11 @@ export class AuthService {
     async createToken(user: User) {
         const expiresInAccessToken = dayjs().add(1, 'd').unix();
         const patient = await this.patientService.getPatientByCpf(user.cpf);
-        if (patient?.role !== UserRole.PATIENT)
-            throw new BadRequestException('Essa role ainda não foi implementada');
+        // if (patient?.role !== UserRole.PATIENT)
+        //     throw new BadRequestException('Essa role ainda não foi implementada');
 
         const result = {
-            id: patient.id,
+            id: patient?.id,
             userId: user.id,
             name: user?.name,
             role: user.role,

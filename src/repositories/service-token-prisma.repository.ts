@@ -13,7 +13,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         private patientRepository: PatientPrismaRepository,
     ) {}
     async completeServiceTokenByPatientId(patientId: string): Promise<any> {
-        const result = await this.prisma.client.serviceToken.findMany({
+        const result = await this.prisma.serviceToken.findMany({
             where: {
                 status: ServiceStatus.PENDING,
                 patientId,
@@ -25,7 +25,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         if (!result?.length)
             throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
 
-        return await this.prisma.client.serviceToken.updateMany({
+        return await this.prisma.serviceToken.updateMany({
             where: {
                 status: ServiceStatus.PENDING,
                 patientId,
@@ -36,7 +36,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         });
     }
     async cancelServiceTokenByPatientId(patientId: string): Promise<any> {
-        const result = await this.prisma.client.serviceToken.findMany({
+        const result = await this.prisma.serviceToken.findMany({
             where: {
                 status: ServiceStatus.PENDING,
                 patientId,
@@ -48,7 +48,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         if (!result?.length)
             throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
 
-        return await this.prisma.client.serviceToken.update({
+        return await this.prisma.serviceToken.update({
             where: {
                 id: result[0].id,
             },
@@ -61,7 +61,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         try {
             const patient = await this.patientRepository.findPatientById(patientId);
             if (!patient) throw new BadRequestException('Paciente não encontrado');
-            const result = await this.prisma.client.serviceToken.findMany({
+            const result = await this.prisma.serviceToken.findMany({
                 where: {
                     status: ServiceStatus.PENDING,
                     patientId: patient.id,
@@ -75,7 +75,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
                     throw new BadRequestException('Há uma ficha pendente');
                 }
             }
-            return await this.prisma.client.serviceToken.create({
+            return await this.prisma.serviceToken.create({
                 data: {
                     patientId,
                     expirationDate,
@@ -86,7 +86,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         }
     }
     async findServiceTokenById(id: string): Promise<any> {
-        const result = await this.prisma.client.serviceToken.findFirst({
+        const result = await this.prisma.serviceToken.findFirst({
             where: {
                 id,
             },
@@ -99,7 +99,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
             result.status === ServiceStatus.PENDING &&
             new Date(result.expirationDate) < new Date()
         ) {
-            return await this.prisma.client.serviceToken.update({
+            return await this.prisma.serviceToken.update({
                 where: {
                     id: result.id,
                 },
@@ -111,7 +111,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
         return result;
     }
     async listServiceTokensByPatientId(patientId: string): Promise<any> {
-        const result = await this.prisma.client.serviceToken.findMany({
+        const result = await this.prisma.serviceToken.findMany({
             where: {
                 patientId,
             },
@@ -128,7 +128,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
                 )
                 .map((x) => x.id);
             if (filteredServiceTokensIds?.length) {
-                await this.prisma.client.serviceToken.updateMany({
+                await this.prisma.serviceToken.updateMany({
                     where: {
                         id: {
                             in: filteredServiceTokensIds,

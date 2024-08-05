@@ -9,6 +9,13 @@ import { CreateUsfDto } from '@/dto/create-usf.dto';
 export class UsfPrismaRepository implements UsfRepository {
     constructor(public prisma: MongoPrismaService) {
     }
+    async listByCityHallId(id: string): Promise<any> {
+        return await this.prisma.usf.findMany({
+            where: {
+                cityHallId: id,
+            }
+        });
+    }
     async createUsfList(createUsfDtoList: Array<CreateUsfDto>): Promise<any> {
         const usfDataList = createUsfDtoList.map((dto) => ({
             usfId: dto._id,
@@ -34,7 +41,7 @@ export class UsfPrismaRepository implements UsfRepository {
 
           try {
             // Criar múltiplos registros no MongoDB
-            const createdUsfs = await this.prisma.client.usf.createMany({
+            const createdUsfs = await this.prisma.usf.createMany({
               data: usfDataList,
             });
       
@@ -42,31 +49,5 @@ export class UsfPrismaRepository implements UsfRepository {
           } catch (error) {
             throw new BadRequestException('Failed to create USFs');
           }
-    }
-    findAll(): Promise<any> {
-        throw new Error('Method not implemented.');
-    }
-
-    async createCityHall({
-        name,
-        state,
-    }: CreateCityHallDto): Promise<any> {
-        return await this.prisma.client.cityHall.create({
-            data: {
-                name,
-                state,
-            },
-        });
-    }
-
-    async findCityHallById(id: string): Promise<any> {
-        return await this.prisma.client.cityHall.findFirst({
-            where: {
-                id,
-            },
-            include: {
-                usfs: true,
-            }
-        });
-    }
+        }
 }

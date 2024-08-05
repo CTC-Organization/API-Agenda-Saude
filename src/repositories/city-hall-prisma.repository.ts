@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { CityHallRepository } from './city-hall.repository';
 import { MongoPrismaService } from '../services/mongo-prisma.service';
 import { CreateCityHallDto } from '@/dto/create-city-hall.dto';
+import { BrazilianState } from '@prisma/mongodb-client';
 
 @Injectable()
 export class CityHallPrismaRepository implements CityHallRepository {
@@ -12,7 +13,7 @@ export class CityHallPrismaRepository implements CityHallRepository {
         name,
         state,
     }: CreateCityHallDto): Promise<any> {
-        return await this.prisma.client.cityHall.create({
+        return await this.prisma.cityHall.create({
             data: {
                 name,
                 state,
@@ -21,7 +22,7 @@ export class CityHallPrismaRepository implements CityHallRepository {
     }
 
     async findCityHallById(id: string): Promise<any> {
-        return await this.prisma.client.cityHall.findFirst({
+        return await this.prisma.cityHall.findFirst({
             where: {
                 id,
             },
@@ -30,4 +31,17 @@ export class CityHallPrismaRepository implements CityHallRepository {
             }
         });
     }
+
+    async findCityHallByOfficialName(name:string,state: BrazilianState): Promise<any> {
+        return await this.prisma.cityHall.findFirst({
+            where: {
+                name,
+                state,
+            },
+            include: {
+                usfs: true,
+            }
+        });
+    }
+    
 }

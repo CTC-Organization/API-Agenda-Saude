@@ -73,3 +73,12 @@ openssl rsa -in private.key -pubout -out public.key
 
 openssl base64 -in private.key -out private.key.base64
 openssl base64 -in public.key -out public.key.base64
+
+para bug nos containers
+docker compose stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+docker-compose down -v
+docker volume prune -f
+docker-compose up --build
+
+login e senha no localhost mongo-express - "admin" e "pass"

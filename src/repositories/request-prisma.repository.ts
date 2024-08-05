@@ -21,7 +21,7 @@ export class RequestPrismaRepository implements RequestRepository {
         files: Array<Express.Multer.File>,
         { date, patientId, serviceTokenId }: CreateRequestDto,
     ) {
-        const request = await this.prisma.client.request.create({
+        const request = await this.prisma.request.create({
             data: {
                 date,
                 patientId,
@@ -44,7 +44,7 @@ export class RequestPrismaRepository implements RequestRepository {
     async updateRequest({ date, requestId }: UpdateRequestDto) {
         const data: any = {};
         if (!!date) data.date = new Date(date);
-        return await this.prisma.client.request.update({
+        return await this.prisma.request.update({
             where: {
                 id: requestId,
             },
@@ -52,14 +52,14 @@ export class RequestPrismaRepository implements RequestRepository {
         });
     }
     async completeRequest(requestId: string): Promise<any> {
-        const result = await this.prisma.client.request.findUnique({
+        const result = await this.prisma.request.findUnique({
             where: {
                 id: requestId,
             },
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi achada');
 
-        return await this.prisma.client.request.update({
+        return await this.prisma.request.update({
             where: {
                 id: requestId,
             },
@@ -69,7 +69,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
     }
     async cancelRequest(requestId: string): Promise<any> {
-        const result = await this.prisma.client.request.findUnique({
+        const result = await this.prisma.request.findUnique({
             where: {
                 id: requestId,
             },
@@ -86,7 +86,7 @@ export class RequestPrismaRepository implements RequestRepository {
             );
         }
 
-        return await this.prisma.client.request.update({
+        return await this.prisma.request.update({
             where: {
                 id: requestId,
             },
@@ -97,7 +97,7 @@ export class RequestPrismaRepository implements RequestRepository {
     }
 
     async findRequestById(id: string): Promise<any> {
-        const result = await this.prisma.client.request.findFirst({
+        const result = await this.prisma.request.findFirst({
             where: {
                 id,
             },
@@ -108,7 +108,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 4');
         if (result.status === RequestStatus.PENDING && new Date(result.date) < new Date()) {
-            await this.prisma.client.request.update({
+            await this.prisma.request.update({
                 where: {
                     id: result.id,
                 },
@@ -120,7 +120,7 @@ export class RequestPrismaRepository implements RequestRepository {
         return result;
     }
     async listRequestsByPatientId(patientId: string): Promise<any> {
-        const result = await this.prisma.client.request.findMany({
+        const result = await this.prisma.request.findMany({
             where: {
                 patientId,
             },
@@ -137,7 +137,7 @@ export class RequestPrismaRepository implements RequestRepository {
                 .filter((r) => r.status === RequestStatus.PENDING && new Date(r.date) < now) // expirationDate === agora então não filtra
                 .map((x) => x.id);
             if (filteredRequestsIds?.length) {
-                await this.prisma.client.request.updateMany({
+                await this.prisma.request.updateMany({
                     where: {
                         id: {
                             in: filteredRequestsIds,
