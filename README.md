@@ -35,7 +35,7 @@
     -   Usar PNPM para instalar pacotes
     -   usar npx prisma generate na primeira vez com o banco de dados funcionando
         atualmente: npx prisma generate --schema=prisma/mongodb/schema.prisma (mongo)
-                    e  npx prisma generate --schema=prisma/schema.prisma (postgres)
+        e npx prisma generate --schema=prisma/schema.prisma (postgres)
     -   usar npx prisma migrate dev para atualizar o banco
 
 **Para rodar:**
@@ -59,7 +59,7 @@
     -   Usar PNPM para instalar pacotes
     -   usar npx prisma generate na primeira vez com o banco de dados funcionando
         atualmente: npx prisma generate --schema=prisma/mongodb/schema.prisma (mongo)
-                e  npx prisma generate --schema=prisma/schema.prisma (postgres)
+        e npx prisma generate --schema=prisma/schema.prisma (postgres)
     -   usar npx prisma migrate dev para atualizar o banco
 
 **Para rodar:**
@@ -75,10 +75,15 @@ openssl base64 -in private.key -out private.key.base64
 openssl base64 -in public.key -out public.key.base64
 
 para bug nos containers
-docker compose stop $(docker ps -aq)
-docker rm $(docker ps -aq)
-docker-compose down -v
-docker volume prune -f
+docker stop $(docker ps -aq) &&
+docker rm $(docker ps -aq) &&
+docker-compose down -v &&
+docker volume prune -f &&
 docker-compose up --build
 
 login e senha no localhost mongo-express - "admin" e "pass"
+
+chave do authorization mongo replica
+
+openssl rand -base64 756 | tr -d '\n' > chave.txt
+chmod 600 chaveRSA

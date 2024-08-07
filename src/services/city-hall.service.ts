@@ -8,11 +8,10 @@ export class CityHallService {
 
     async createCityHall(createCityHallDto: CreateCityHallDto) {
         try {
-
-            const foundCityHall =await this.cityhallRepository.findCityHallByOfficialName(createCityHallDto.name,createCityHallDto.state)
-            if(!!foundCityHall) throw new BadRequestException("Prefeitura já cadastrada")
+            // const foundCityHall =await this.cityhallRepository.findCityHallByOfficialName(createCityHallDto.name,createCityHallDto.state)
+            // if(!!foundCityHall) throw new BadRequestException("Prefeitura já cadastrada")
             const cityHall = await this.cityhallRepository.createCityHall(createCityHallDto);
-            return cityHall
+            return cityHall;
         } catch (err) {
             throw err;
         }
