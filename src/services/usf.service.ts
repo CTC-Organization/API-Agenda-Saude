@@ -13,8 +13,15 @@ export class UsfService {
             throw err;
         }
     }
-    async listByCityHallId(usfId: string) {
-        const result = await this.usfRepository.listByCityHallId(usfId);
+    async findUsfByCoordenates({ latitude, longitude }: { latitude: string; longitude: number }) {
+        const result = await this.usfRepository.findUsfByCoordenates({
+            latitude,
+            longitude,
+        });
         return result;
+    }
+
+    async listUsfsByHealthDistrict(distrito_sanitario: number): Promise<any> {
+        return await this.usfRepository.listUsfsByHealthDistrict(distrito_sanitario);
     }
 }

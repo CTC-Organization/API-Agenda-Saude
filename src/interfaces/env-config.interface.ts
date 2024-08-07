@@ -14,4 +14,6 @@ export interface IEnvInterface {
     getGoggleCloudBucketName(): string;
 
     getGoogleCloudCredentials(): string;
+
+    getGoggleMapsApiKey(): string;
 }

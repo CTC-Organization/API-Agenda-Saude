@@ -72,8 +72,4 @@ export class CreateUsfDto {
     @IsNotEmpty()
     @IsNumber()
     longitude: number;
-
-    @IsNotEmpty()
-    @IsString()
-    cityHallId: string;
 }

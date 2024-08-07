@@ -11,11 +11,9 @@ generator client {
 }
 
 model Usf {
-  id                 String   @id @default(auto()) @map("_id") @db.ObjectId()
-  usfId              Int      @map("usf_id")
+  id                 Int            @id() @map("_id")
   nome_oficial       String
   rpa                Int
-  distrito_sanitario Int
   microregiao        Float
   cnes               Int
   cod_nat            String
@@ -30,19 +28,20 @@ model Usf {
   ordem              String
   latitude           String
   longitude          Float
-  cityHall           CityHall @relation(fields: [cityHallId], references: [id])
-  cityHallId         String   @map("city_hall_id") @db.ObjectId
+  healthDistrict     HealthDistrict @relation(fields: [distrito_sanitario], references: [id])
+  distrito_sanitario Int            @map("distrito_sanitario")
 
   @@map("usfs")
 }
 
-model CityHall {
-  id    String         @id @default(auto()) @map("_id") @db.ObjectId
-  name  String
-  state BrazilianState
-  usfs  Usf[]
+model HealthDistrict {
+  id                 Int    @id() @map("_id")
+  bairro             String
+  distrito_sanitario Int
+  descricao_distrito String
+  usfs               Usf[]
 
-  @@map("city_halls")
+  @@map("health_districts")
 }
 
 enum BrazilianState {

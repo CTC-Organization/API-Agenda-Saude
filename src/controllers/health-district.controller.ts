@@ -1,42 +1,34 @@
 import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 
-import { UsfService } from '@/services/usf.service';
+import { HealthDistrictService } from '@/services/health-district.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateUsfDto } from '@/dto/create-usf.dto';
+import { CreateHealthDistrictDto } from '@/dto/create-health-district.dto';
 import { AuthGuard } from '@/commons/guards/auth.guard';
 import { ValidateIsAdminOrEmployee } from '@/commons/guards/validate-admin-or-employee.guard';
 
-@ApiTags('Unidades de saúde da família: usfs')
-@Controller('usfs')
+@ApiTags('Distritos sanitários: healthDistricts')
+@Controller('health-districts')
 @UseGuards(AuthGuard)
-export class UsfController {
-    constructor(private readonly usfService: UsfService) {}
+export class HealthDistrictController {
+    constructor(private readonly healthdistrictService: HealthDistrictService) {}
     @UseGuards(ValidateIsAdminOrEmployee)
     @Post()
-    async createUsfs(
-        @Body()
-        { fields, records }: { fields: any[]; records: any[][] },
-    ) {
+    async createHealthDistricts(@Body() { fields, records }: { fields: any[]; records: any[][] }) {
         const formattedRecords = records.map((record: any[]) => {
             let recordObj: any = {};
             fields.forEach((field: any, index: number) => {
-                if (field.id === 'endereço') field.id = 'endereco';
                 recordObj[field.id] = record[index];
             });
             return recordObj;
         });
 
-        return await this.usfService.createUsfList(formattedRecords);
-    }
-    @Get('by-health-district/:id')
-    async listUsfsByHealthDistrictId(@Param('id') id: number) {
-        return await this.usfService.listUsfsByHealthDistrict(id);
+        return await this.healthdistrictService.createHealthDistricts(formattedRecords);
     }
     @Get()
-    async findUsfByCoordenates(
+    async findHealthDistrictByCoordenates(
         @Body() { latitude, longitude }: { latitude: string; longitude: number },
     ) {
-        return await this.usfService.findUsfByCoordenates({
+        return await this.healthdistrictService.findHealthDistrictByCoordenates({
             latitude,
             longitude,
         });

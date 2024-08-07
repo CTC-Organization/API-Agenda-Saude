@@ -11,7 +11,7 @@ import { RoleGuard } from '../commons/guards/role.guard';
 import { AttachmentModule } from './attachment.module';
 import { RequestModule } from './request.module';
 import { MongoModule } from './mongo-prisma.module';
-import { CityHallModule } from './city-hall.module';
+import { HealthDistrictModule } from './health-district.module';
 import { UsfModule } from './usf.module';
 
 @Module({
@@ -26,7 +26,7 @@ import { UsfModule } from './usf.module';
         ServiceTokenModule,
         RequestModule,
         AttachmentModule,
-        CityHallModule,
+        HealthDistrictModule,
         UsfModule,
     ],
     controllers: [],
