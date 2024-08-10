@@ -1,10 +1,9 @@
 FROM node:20.15.1-bookworm-slim
 
-ARG production2
 ARG DATABASE_URL
 ARG MONGODB_URI
 WORKDIR /usr/src/api
-COPY ../.. .
+COPY . .
 RUN npm install -g pnpm@8.6.12
 RUN pnpm install
 RUN npx prisma generate
