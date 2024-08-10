@@ -8,6 +8,7 @@ COPY ../.. .
 RUN npm install -g pnpm@8.6.12
 RUN pnpm install
 RUN npx prisma generate
+RUN npx prisma generate --schema=prisma/mongodb/schema.prisma
 RUN apt-get update -y && apt-get install -y openssl
 ENV DATABASE_URL=${DATABASE_URL}
 ENV MONGODB_URI=${MONGODB_URI}
