@@ -14,12 +14,12 @@ export class AuthController {
         return await this.authService.login(loginInputDto);
     }
 
-    @Post('refresh-token')
+    @Post('refresh-token/:id')
     async refreshToken(
-        @Body() { id, refreshToken }: { id: string; refreshToken: string },
-        @Req() request: Request,
+        @Param('id') userId: string,
+        @Body() { refreshToken }: { refreshToken: string },
     ) {
-        return await this.authService.checkRefreshToken(id, refreshToken);
+        return await this.authService.checkRefreshToken(userId, refreshToken);
     }
 
     @UseGuards(ValidateIsUserSelfOrAdmin)

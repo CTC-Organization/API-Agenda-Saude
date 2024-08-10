@@ -30,7 +30,6 @@ export class RequestPrismaRepository implements RequestRepository {
             },
         });
         if (!!request) {
-            console.log('criou request');
             await this.attachmentPrismaRepository.createAttachments({
                 attachmentType: AttachmentType.REQUEST_ATTACHMENT,
                 files,

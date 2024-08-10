@@ -25,7 +25,6 @@ export class AuthService {
         });
         if (!user) throw new BadRequestException('Seu cpf e/ou senha estão incorretos!');
         const isMatch = await argon2.verify(user.password, password);
-
         if (!isMatch) throw new BadRequestException('Seu cpf e/ou senha estão incorretos!');
         const result = await this.createToken(user);
         return result;
@@ -49,7 +48,7 @@ export class AuthService {
         // COMPLEMENTAR lógica do código comentado ao desenvolver ADMIN e EMPLOYEE
         // if (patient?.role !== UserRole.PATIENT)
         //     throw new BadRequestException('Essa role ainda não foi implementada');
-        const expiresInAccessToken = dayjs().add(30, 'seconds').unix(); // testar refreshtoken e accesstoken
+        const expiresInAccessToken = dayjs().add(1, 'days').unix(); // testar refreshtoken e accesstoken
         const patient = await this.patientService.getPatientByCpf(user.cpf);
         const refreshToken = await this.createRefreshToken(user);
         delete refreshToken.userId;
@@ -78,17 +77,14 @@ export class AuthService {
     }
 
     async createRefreshToken(user: User) {
-        const expiresInRefreshToken = dayjs().add(1, 'minutes').unix(); // testar refreshtoken e accesstoken
-
-        await this.deleteRefreshTokenByUserId(user.id);
-
+        const expiresInRefreshToken = dayjs().add(7, 'days').unix(); // testar refreshtoken e accesstoken
+        await this.deleteRefreshTokenByUserId(user.id); // já apaga sempre que cria
         const generatedRefreshToken = await this.prisma.refreshToken.create({
             data: {
                 userId: user.id,
                 expiresIn: expiresInRefreshToken,
             },
         });
-
         return generatedRefreshToken;
     }
 
@@ -98,21 +94,21 @@ export class AuthService {
 
             return data;
         } catch (e) {
-            throw new ForbiddenException('Token expirado e/ou inválido!');
+            throw new ForbiddenException('Token expirado e/ou inválido! 1');
         }
     }
 
     async checkRefreshToken(userId: string, refreshTokenId: string) {
         const refreshToken = await this.getRefreshToken(refreshTokenId);
-        await this.prisma.refreshToken.delete({
-            where: {
-                id: refreshToken.id,
-            },
-        });
 
         const isRefreshTokenExpired = dayjs().isAfter(dayjs.unix(refreshToken.expiresIn));
         if (isRefreshTokenExpired) {
-            throw new BadRequestException('Token expirado e/ou inválido!');
+            await this.prisma.refreshToken.delete({
+                where: {
+                    id: refreshToken.id,
+                },
+            });
+            throw new BadRequestException('Refresh token expirado e/ou inválido! 2');
         }
 
         const user = await this.prisma.user.findFirst({
@@ -146,10 +142,10 @@ export class AuthService {
                     id: refreshTokenId,
                 },
             });
-            if (!refreshToken) throw new BadRequestException('Token inválido e/ou expirado!');
+            if (!refreshToken) throw new BadRequestException('Token inválido e/ou expirado! 3');
             return refreshToken;
         } catch (e) {
-            throw new BadRequestException('Token inválido e/ou expirado!');
+            throw new BadRequestException('Token inválido e/ou expirado! 4');
         }
     }
 }

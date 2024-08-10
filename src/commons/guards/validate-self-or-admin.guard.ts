@@ -11,8 +11,11 @@ export class ValidateIsUserSelfOrAdmin implements CanActivate {
 
         try {
             const user = await this.authService.checkToken((authorization ?? '').split(' ')[1]);
-
-            if (!(user.id === request.params.id) && !(user.role === UserRole.ADMIN)) {
+            if (
+                !(user.id === request.params.id) &&
+                !(user.userId === request.params.id) &&
+                !(user.role === UserRole.ADMIN)
+            ) {
                 return false;
             }
 

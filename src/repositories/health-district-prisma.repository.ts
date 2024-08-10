@@ -14,7 +14,6 @@ export class HealthDistrictPrismaRepository implements HealthDistrictRepository 
         public configService: EnvConfigService,
     ) {
         this.apiKey = this.configService.getGoggleMapsApiKey();
-        console.log(this.apiKey);
     }
 
     async createHealthDistricts(
@@ -58,9 +57,6 @@ export class HealthDistrictPrismaRepository implements HealthDistrictRepository 
 
         try {
             const response = await axios.get(url);
-            if (response) {
-                console.log('xxx: ', response.data);
-            }
             const results = response.data.results;
 
             let bairro = '';
