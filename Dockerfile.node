@@ -1,4 +1,6 @@
 FROM node:20.15.1-bookworm-slim
+
+ARG production2
 ARG DATABASE_URL
 ARG MONGODB_URI
 WORKDIR /usr/src/api
