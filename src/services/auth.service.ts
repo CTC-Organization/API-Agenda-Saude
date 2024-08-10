@@ -31,22 +31,41 @@ export class AuthService {
         return result;
     }
 
+    async logout(id: string) {
+        try {
+            await this.prisma.refreshToken.delete({
+                where: {
+                    userId: id,
+                },
+            });
+
+            return { message: 'Usuário deslogado!' };
+        } catch (e) {
+            throw new BadRequestException('Erro ao deslogar o usuário!');
+        }
+    }
+
     async createToken(user: User) {
-        const expiresInAccessToken = dayjs().add(1, 'd').unix();
-        const patient = await this.patientService.getPatientByCpf(user.cpf);
+        // COMPLEMENTAR lógica do código comentado ao desenvolver ADMIN e EMPLOYEE
         // if (patient?.role !== UserRole.PATIENT)
         //     throw new BadRequestException('Essa role ainda não foi implementada');
+        const expiresInAccessToken = dayjs().add(30, 'seconds').unix(); // testar refreshtoken e accesstoken
+        const patient = await this.patientService.getPatientByCpf(user.cpf);
+        const refreshToken = await this.createRefreshToken(user);
+        delete refreshToken.userId;
 
         const result = {
-            id: patient?.id,
+            id: patient.id,
             userId: user.id,
-            name: user?.name,
+            name: user.name,
             role: user.role,
+            exp: expiresInAccessToken,
+            refreshToken: refreshToken.id,
             accessToken: this.jwtService.sign(
                 {
                     id: patient.id,
                     userId: user.id,
-                    name: user?.name,
+                    name: user.name,
                     cpf: user.cpf,
                     role: user.role,
                 },
@@ -54,9 +73,23 @@ export class AuthService {
                     subject: String(patient.id),
                 },
             ),
-            exp: expiresInAccessToken,
         };
         return result;
+    }
+
+    async createRefreshToken(user: User) {
+        const expiresInRefreshToken = dayjs().add(1, 'minutes').unix(); // testar refreshtoken e accesstoken
+
+        await this.deleteRefreshTokenByUserId(user.id);
+
+        const generatedRefreshToken = await this.prisma.refreshToken.create({
+            data: {
+                userId: user.id,
+                expiresIn: expiresInRefreshToken,
+            },
+        });
+
+        return generatedRefreshToken;
     }
 
     checkToken(accessToken: string) {
@@ -66,6 +99,57 @@ export class AuthService {
             return data;
         } catch (e) {
             throw new ForbiddenException('Token expirado e/ou inválido!');
+        }
+    }
+
+    async checkRefreshToken(userId: string, refreshTokenId: string) {
+        const refreshToken = await this.getRefreshToken(refreshTokenId);
+        await this.prisma.refreshToken.delete({
+            where: {
+                id: refreshToken.id,
+            },
+        });
+
+        const isRefreshTokenExpired = dayjs().isAfter(dayjs.unix(refreshToken.expiresIn));
+        if (isRefreshTokenExpired) {
+            throw new BadRequestException('Token expirado e/ou inválido!');
+        }
+
+        const user = await this.prisma.user.findFirst({
+            where: {
+                id: userId,
+            },
+        });
+        return await this.createToken(user);
+    }
+
+    async deleteRefreshTokenByUserId(userId: string) {
+        const refreshToken = await this.prisma.refreshToken.findFirst({
+            where: {
+                userId: userId,
+            },
+        });
+
+        if (refreshToken) {
+            await this.prisma.refreshToken.delete({
+                where: {
+                    id: refreshToken.id,
+                },
+            });
+        }
+    }
+
+    async getRefreshToken(refreshTokenId: string) {
+        try {
+            const refreshToken = await this.prisma.refreshToken.findFirst({
+                where: {
+                    id: refreshTokenId,
+                },
+            });
+            if (!refreshToken) throw new BadRequestException('Token inválido e/ou expirado!');
+            return refreshToken;
+        } catch (e) {
+            throw new BadRequestException('Token inválido e/ou expirado!');
         }
     }
 }
