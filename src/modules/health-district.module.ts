@@ -1,30 +1,33 @@
 import { forwardRef, Module } from '@nestjs/common';
-import { MongoPrismaService } from '../services/mongo-prisma.service';
 import { HealthDistrictController } from '@/controllers/health-district.controller';
-import { MongoModule } from './mongo-prisma.module';
 import { HealthDistrictService } from '@/services/health-district.service';
 import { HealthDistrictRepository } from '@/repositories/health-district.repository';
-import { HealthDistrictPrismaRepository } from '@/repositories/health-district-prisma.repository';
 import { AuthModule } from './auth.module';
 import { EnvConfigModule } from './env-config.module';
+import { HealthDistrictMongooseRepository } from '@/repositories/mongoose/health-district-mongoose.repository';
+import { MongooseModule } from '@nestjs/mongoose';
+import { HealthDistrict, HealthDistrictSchema } from '@/models/health-district.model';
 
 @Module({
-    imports: [forwardRef(() => EnvConfigModule), MongoModule, AuthModule],
+    imports: [
+        forwardRef(() => EnvConfigModule),
+        AuthModule,
+        MongooseModule.forFeature([{ name: HealthDistrict.name, schema: HealthDistrictSchema }]),
+    ],
     controllers: [HealthDistrictController],
     providers: [
-        MongoPrismaService,
         HealthDistrictService,
-        HealthDistrictPrismaRepository,
+        HealthDistrictMongooseRepository,
         {
             provide: HealthDistrictRepository,
-            useClass: HealthDistrictPrismaRepository,
+            useClass: HealthDistrictMongooseRepository,
         },
     ],
     exports: [
-        HealthDistrictPrismaRepository,
+        HealthDistrictMongooseRepository,
         {
             provide: HealthDistrictRepository,
-            useClass: HealthDistrictPrismaRepository,
+            useClass: HealthDistrictMongooseRepository,
         },
     ],
 })

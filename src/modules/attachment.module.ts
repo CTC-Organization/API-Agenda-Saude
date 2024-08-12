@@ -1,4 +1,4 @@
-import { AttachmentPrismaRepository } from '@/repositories/attachment-prisma.repository';
+import { AttachmentPrismaRepository } from '@/repositories/prisma/attachment-prisma.repository';
 import { AttachmentService } from '@/services/attachment.service';
 import { forwardRef, Global, Module } from '@nestjs/common';
 import { RequestModule } from './request.module';

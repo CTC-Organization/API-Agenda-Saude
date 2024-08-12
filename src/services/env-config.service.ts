@@ -37,4 +37,8 @@ export class EnvConfigService implements IEnvInterface {
     getGoggleMapsApiKey(): string {
         return this.configService.get<string>('GOOGLE_MAPS_API_KEY');
     }
+
+    getMongodbUri(): string {
+        return this.configService.get<string>('MONGODB_URI');
+    }
 }

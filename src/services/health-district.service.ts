@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { HealthDistrictRepository } from '../repositories/health-district.repository';
 import { CreateHealthDistrictDto } from '@/dto/create-health-district.dto';
 
@@ -23,7 +23,7 @@ export class HealthDistrictService {
         latitude: string;
         longitude: number;
     }) {
-        const result = await this.healthdistrictRepository.findHealthDistrictByCoordenates({
+        const result = await this.healthdistrictRepository.findHealthDistrictByCoordinates({
             latitude,
             longitude,
         });

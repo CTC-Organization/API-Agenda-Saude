@@ -13,20 +13,17 @@ services:
         volumes:
             - docker-nest-postgres:/var/lib/postgresql/data
     mongo:
-        build:
-            context: .
-            dockerfile: Dockerfile-mongo
-        container_name: mongodb-replicaset
+        container_name: agenda_saude_mongo
+        image: mongo:8.0-rc
         restart: always
         environment:
             MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
             MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
             MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
         ports:
-            - 27017:27017
-        command: --replSet rs0 --keyFile /etc/mongo-keyfile --bind_ip_all --port 27017
+            - ${MONGO_PORT}:${MONGO_PORT}
         volumes:
-            - data:/data/db
+            - docker-nest-mongo:/var/lib/mongo/data
 
 volumes:
     data: {}

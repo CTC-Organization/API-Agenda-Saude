@@ -4,7 +4,7 @@ export abstract class HealthDistrictRepository {
     abstract createHealthDistricts(
         CreateHealthDistrictDto: Array<CreateHealthDistrictDto>,
     ): Promise<any>;
-    abstract findHealthDistrictByCoordenates({
+    abstract findHealthDistrictByCoordinates({
         latitude,
         longitude,
     }: {

@@ -1,8 +1,6 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
-
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { HealthDistrictService } from '@/services/health-district.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CreateHealthDistrictDto } from '@/dto/create-health-district.dto';
 import { AuthGuard } from '@/commons/guards/auth.guard';
 import { ValidateIsAdminOrEmployee } from '@/commons/guards/validate-admin-or-employee.guard';
 

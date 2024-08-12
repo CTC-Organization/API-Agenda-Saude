@@ -10,9 +10,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { RoleGuard } from '../commons/guards/role.guard';
 import { AttachmentModule } from './attachment.module';
 import { RequestModule } from './request.module';
-import { MongoModule } from './mongo-prisma.module';
 import { HealthDistrictModule } from './health-district.module';
 import { UsfModule } from './usf.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { EnvConfigService } from '@/services/env-config.service';
 
 @Module({
     imports: [
@@ -20,7 +21,12 @@ import { UsfModule } from './usf.module';
         JwtModule,
         AuthModule,
         DatabaseModule,
-        MongoModule,
+        MongooseModule.forRootAsync({
+            useFactory: (configService: EnvConfigService) => ({
+                uri: configService.getMongodbUri(),
+            }),
+            inject: [EnvConfigService],
+        }),
         UserModule,
         PatientModule,
         ServiceTokenModule,

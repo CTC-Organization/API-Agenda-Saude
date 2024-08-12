@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../services/prisma.service';
-import { ServiceTokenRepository } from './service-token.repository';
-import { CreateServiceTokenDto } from '../dto/create-service-token.dto';
+import { PrismaService } from '../../services/prisma.service';
+import { ServiceTokenRepository } from '../service-token.repository';
+import { CreateServiceTokenDto } from '../../dto/create-service-token.dto';
 import { ServiceStatus } from '@prisma/postgres-client';
 import { PatientPrismaRepository } from './patient-prisma.repository';
 import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';

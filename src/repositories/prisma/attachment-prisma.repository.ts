@@ -1,14 +1,13 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../services/prisma.service';
-import { AttachmentRepository } from './attachment.repository';
-import { CreateAttachmentDto } from '../dto/create-attachment.dto';
-import {Attachment, AttachmentType, Prisma } from '@prisma/postgres-client';
-import { EnvConfigService } from '../services/env-config.service';
+import { PrismaService } from '../../services/prisma.service';
+import { AttachmentRepository } from '../attachment.repository';
+import { CreateAttachmentDto } from '../../dto/create-attachment.dto';
+import { Attachment, AttachmentType, Prisma } from '@prisma/postgres-client';
+import { EnvConfigService } from '../../services/env-config.service';
 import { randomUUID } from 'crypto';
-import { CreateAttachmentsDto } from '../dto/create-attachments.dto';
+import { CreateAttachmentsDto } from '../../dto/create-attachments.dto';
 import { RequestPrismaRepository } from './request-prisma.repository';
 import { Bucket, Storage } from '@google-cloud/storage';
-
 
 @Injectable()
 export class AttachmentPrismaRepository implements AttachmentRepository {

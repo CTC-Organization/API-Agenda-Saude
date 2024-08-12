@@ -5,6 +5,8 @@ export interface IEnvInterface {
 
     getDatabase(): string;
 
+    getMongodbUri(): string;
+
     getJwtPrivateKey(): string;
 
     getJwtPublicKey(): string;
