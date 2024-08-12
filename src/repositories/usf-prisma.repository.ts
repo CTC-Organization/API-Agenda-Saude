@@ -116,9 +116,13 @@ export class UsfPrismaRepository implements UsfRepository {
         }));
 
         try {
-            const createdUsfs = await this.prisma.usf.createMany({
-                data: usfDataList,
-            });
+            const createdUsfs = [];
+            for (const data of usfDataList) {
+                const createdUsf = await this.prisma.usf.create({
+                    data,
+                });
+                createdUsfs.push(createdUsf);
+            }
 
             return createdUsfs;
         } catch (error) {

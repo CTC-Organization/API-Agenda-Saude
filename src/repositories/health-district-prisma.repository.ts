@@ -34,10 +34,14 @@ export class HealthDistrictPrismaRepository implements HealthDistrictRepository 
         );
 
         try {
-            // Criar múltiplos registros no MongoDB
-            const createdHealthDistricts = await this.prisma.healthDistrict.createMany({
-                data: healthDistrictsDataList,
-            });
+            // Inserir registros um por um no MongoDB
+            const createdHealthDistricts = [];
+            for (const data of healthDistrictsDataList) {
+                const createdHealthDistrict = await this.prisma.healthDistrict.create({
+                    data,
+                });
+                createdHealthDistricts.push(createdHealthDistrict);
+            }
 
             return createdHealthDistricts;
         } catch (error) {
