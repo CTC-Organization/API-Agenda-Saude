@@ -4,7 +4,7 @@ import { HealthDistrict } from './health-district.model';
 
 @Schema({ collection: 'usfs' })
 export class Usf extends Document {
-    @Prop({ type: Number, required: true })
+    @Prop({ type: Number, required: true, unique: true })
     id: number;
 
     @Prop({ required: true })
