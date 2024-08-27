@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { UserRepository } from './user.repository';
+import { UserRepository } from '../user.repository';
 import { PrismaService } from '@/services/prisma.service';
-import { User } from '@prisma/client';
+import { User } from '@prisma/postgres-client';
 import { UpdateUserDto } from '@/dto/update-user.dto';
 import { CreateUserDto } from '@/dto/create-user.dto';
 

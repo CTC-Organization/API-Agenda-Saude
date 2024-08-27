@@ -4,7 +4,7 @@ import { PatientRepository } from '../repositories/patient.repository';
 import * as argon2 from 'argon2';
 import { UpdatePatientDto } from '../dto/update-patient.dto';
 import { z } from 'zod';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/postgres-client';
 
 export const CreatePatientSchema = z.object({
     cpf: z.string().length(1, 'CPF deve ter 11 caracteres'),

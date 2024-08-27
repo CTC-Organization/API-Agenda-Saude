@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from '../repositories/user.repository';
 import { UserService } from '../services/user.service';
 import { randomUUID } from 'node:crypto';
-import { User } from '@prisma/client';
+import { User } from '@prisma/postgres-client';
 import { CreateUserDto } from '@/dto/create-user.dto';
 
 const mockUserRepository = {

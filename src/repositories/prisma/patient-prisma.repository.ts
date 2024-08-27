@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { UserPrismaRepository } from './user-prisma.repository';
-import { PrismaService } from '../services/prisma.service';
-import { PatientRepository } from './patient.repository';
-import { CreatePatient, Patient } from '../interfaces/patient';
-import { UpdatePatientDto } from '../dto/update-patient.dto';
-import { UserRole } from '@prisma/client';
+import { PrismaService } from '../../services/prisma.service';
+import { PatientRepository } from '../patient.repository';
+import { CreatePatient, Patient } from '../../interfaces/patient';
+import { UpdatePatientDto } from '../../dto/update-patient.dto';
+import { UserRole } from '@prisma/postgres-client';
 
 @Injectable()
 export class PatientPrismaRepository extends UserPrismaRepository implements PatientRepository {

@@ -2,7 +2,7 @@ import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthService } from '../../services/auth.service';
 import { UserRole } from '@prisma/postgres-client';
 @Injectable()
-export class ValidateIsUserSelfOrAdminOrEmployee implements CanActivate {
+export class ValidateIsAdminOrEmployee implements CanActivate {
     constructor(private readonly authService: AuthService) {}
 
     async canActivate(context: ExecutionContext) {
@@ -13,7 +13,6 @@ export class ValidateIsUserSelfOrAdminOrEmployee implements CanActivate {
             const user = await this.authService.checkToken((authorization ?? '').split(' ')[1]);
 
             if (
-                !(user.id === request.params.id) &&
                 !(user.role === UserRole.ADMIN) &&
                 !(user.role === UserRole.EMPLOYEE)
             ) {

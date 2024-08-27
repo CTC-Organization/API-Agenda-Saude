@@ -1,4 +1,4 @@
-import { AttachmentType } from '@prisma/client';
+import { AttachmentType } from '@prisma/postgres-client';
 import { IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateAttachmentsDto {

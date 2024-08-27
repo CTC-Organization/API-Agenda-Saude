@@ -1,10 +1,10 @@
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../services/prisma.service';
-import { RequestRepository } from './request.repository';
-import { CreateRequestDto } from '../dto/create-request.dto';
-import { AttachmentType, RequestStatus } from '@prisma/client';
+import { PrismaService } from '../../services/prisma.service';
+import { RequestRepository } from '../request.repository';
+import { CreateRequestDto } from '../../dto/create-request.dto';
+import { AttachmentType, RequestStatus } from '@prisma/postgres-client';
 
-import { UpdateRequestDto } from '../dto/update-request.dto';
+import { UpdateRequestDto } from '../../dto/update-request.dto';
 import { AttachmentPrismaRepository } from './attachment-prisma.repository';
 import { ServiceTokenPrismaRepository } from './service-token-prisma.repository';
 import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';
@@ -30,7 +30,6 @@ export class RequestPrismaRepository implements RequestRepository {
             },
         });
         if (!!request) {
-            console.log('criou request');
             await this.attachmentPrismaRepository.createAttachments({
                 attachmentType: AttachmentType.REQUEST_ATTACHMENT,
                 files,

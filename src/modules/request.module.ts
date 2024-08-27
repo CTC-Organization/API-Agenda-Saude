@@ -1,4 +1,4 @@
-import { RequestPrismaRepository } from '@/repositories/request-prisma.repository';
+import { RequestPrismaRepository } from '@/repositories/prisma/request-prisma.repository';
 import { RequestService } from '@/services/request.service';
 import { forwardRef, Global, Module } from '@nestjs/common';
 import { PrismaService } from '@/services/prisma.service';

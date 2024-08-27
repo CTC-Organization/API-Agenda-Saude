@@ -5,6 +5,8 @@ export interface IEnvInterface {
 
     getDatabase(): string;
 
+    getMongodbUri(): string;
+
     getJwtPrivateKey(): string;
 
     getJwtPublicKey(): string;
@@ -14,4 +16,6 @@ export interface IEnvInterface {
     getGoggleCloudBucketName(): string;
 
     getGoogleCloudCredentials(): string;
+
+    getGoggleMapsApiKey(): string;
 }

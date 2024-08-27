@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AttachmentRepository } from '@/repositories/attachment.repository';
-import { AttachmentType } from '@prisma/client';
+import { AttachmentType } from '@prisma/postgres-client';
 
 @Injectable()
 export class AttachmentService {

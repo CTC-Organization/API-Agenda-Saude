@@ -1,5 +1,5 @@
 import { IsEmail, IsString, IsOptional, IsEnum, IsNotEmpty, IsDateString } from 'class-validator';
-import { UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/postgres-client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePatientDto {
