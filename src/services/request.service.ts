@@ -15,8 +15,8 @@ export class RequestService {
     ) {}
 
     async createRequest(
-        files: Array<Express.Multer.File>,
         { date, serviceTokenId, patientId }: CreateRequestDto,
+        files?: Array<Express.Multer.File>,
     ) {
         try {
             const serviceToken = await this.serviceTokenRepository.findServiceTokenById(
@@ -30,11 +30,14 @@ export class RequestService {
             } else if (!(await this.patientRepository.findPatientById(patientId))) {
                 throw new NotFoundException('Paciente não encontrada');
             }
-            return await this.requestRepository.createRequest(files, {
-                patientId,
-                date,
-                serviceTokenId,
-            });
+            return await this.requestRepository.createRequest(
+                {
+                    patientId,
+                    date,
+                    serviceTokenId,
+                },
+                files,
+            );
         } catch (err) {
             throw err;
         }

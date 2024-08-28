@@ -3,8 +3,8 @@ import { CreateRequestDto } from '../dto/create-request.dto';
 
 export abstract class RequestRepository {
     abstract createRequest(
-        files: Array<Express.Multer.File>,
         createRequestDto: CreateRequestDto,
+        files?: Array<Express.Multer.File>,
     ): Promise<any>;
     abstract updateRequest(updateRequestDto: UpdateRequestDto): Promise<any>;
     abstract cancelRequest(id: string): Promise<any>;

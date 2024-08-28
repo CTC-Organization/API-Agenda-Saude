@@ -31,15 +31,6 @@ export class RequestController {
     @Post()
     @UseInterceptors(AnyFilesInterceptor())
     async createRequest(
-        @UploadedFiles(
-            new ParseFilePipe({
-                validators: [
-                    new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf)$/ }),
-                    new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 2 }),
-                ],
-            }),
-        )
-        files: Array<Express.Multer.File>,
         @Req() req: any,
         @Body()
         {
@@ -49,12 +40,24 @@ export class RequestController {
             date: string;
             serviceTokenId: string;
         },
+        @UploadedFiles(
+            new ParseFilePipe({
+                validators: [
+                    new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf)$/ }),
+                    new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 2 }),
+                ],
+            }),
+        )
+        files?: Array<Express.Multer.File>,
     ) {
-        return await this.requestService.createRequest(files, {
-            patientId: req.user.id,
-            date,
-            serviceTokenId,
-        });
+        return await this.requestService.createRequest(
+            {
+                patientId: req.user.id,
+                date,
+                serviceTokenId,
+            },
+            files,
+        );
     }
 
     @Patch()

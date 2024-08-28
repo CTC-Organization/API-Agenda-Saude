@@ -18,8 +18,8 @@ export class RequestPrismaRepository implements RequestRepository {
         private serviceTokenPrismaRepository: ServiceTokenPrismaRepository,
     ) {}
     async createRequest(
-        files: Array<Express.Multer.File>,
         { date, patientId, serviceTokenId }: CreateRequestDto,
+        files?: Array<Express.Multer.File>,
     ) {
         const request = await this.prisma.request.create({
             data: {
@@ -29,7 +29,7 @@ export class RequestPrismaRepository implements RequestRepository {
                 status: RequestStatus.PENDING,
             },
         });
-        if (!!request) {
+        if (!!request && files?.length > 0) {
             await this.attachmentPrismaRepository.createAttachments({
                 attachmentType: AttachmentType.REQUEST_ATTACHMENT,
                 files,
@@ -37,6 +37,7 @@ export class RequestPrismaRepository implements RequestRepository {
                 folder: 'request_attachments',
             });
         }
+
         await this.serviceTokenPrismaRepository.completeServiceTokenByPatientId(patientId);
         return request;
     }
