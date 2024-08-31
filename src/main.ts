@@ -18,18 +18,8 @@ async function bootstrap() {
     const app = await NestFactory.create(AppModule, {
         cors: {
             methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-            origin: function (origin, callback) {
-                if (!origin) {
-                    callback(null, true);
-                    return;
-                }
-                if (whitelist.includes(origin)) {
-                    callback(null, true);
-                } else {
-                    logger.warn(`Origin: ${origin} not allowed by CORS`);
-                    callback(new ForbiddenException('Not allowed by CORS'), false);
-                }
-            },
+            origin: '*',
+            allowedHeaders: ['Content-Type', 'Authorization'],
         },
     });
 
