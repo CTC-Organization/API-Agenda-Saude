@@ -85,4 +85,25 @@ export class RequestService {
         }
         return result;
     }
+    async confirmRequest(id: string) {
+        const result = await this.requestRepository.confirmRequest(id);
+        if (!result) {
+            throw new NotFoundException('Requisição não encontrada');
+        }
+        return result;
+    }
+    async denyRequest(id: string) {
+        const result = await this.requestRepository.denyRequest(id);
+        if (!result) {
+            throw new NotFoundException('Requisição não encontrada');
+        }
+        return result;
+    }
+    async acceptRequest(id: string) {
+        const result = await this.requestRepository.acceptRequest(id);
+        if (!result) {
+            throw new NotFoundException('Requisição não encontrada');
+        }
+        return result;
+    }
 }

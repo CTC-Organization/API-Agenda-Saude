@@ -42,6 +42,7 @@ export class RequestController {
         },
         @UploadedFiles(
             new ParseFilePipe({
+                fileIsRequired: false,
                 validators: [
                     new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf)$/ }),
                     new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 2 }),
@@ -81,5 +82,20 @@ export class RequestController {
     @Patch('complete/:id')
     async completeRequest(@Param('id') id: string) {
         return await this.requestService.completeRequest(id);
+    }
+
+    @Patch('accept/:id')
+    async acceptRequest(@Param('id') id: string) {
+        return await this.requestService.acceptRequest(id);
+    }
+
+    @Patch('deny/:id')
+    async denyRequest(@Param('id') id: string) {
+        return await this.requestService.denyRequest(id);
+    }
+
+    @Patch('confirm/:id')
+    async confirmRequest(@Param('id') id: string) {
+        return await this.requestService.confirmRequest(id);
     }
 }

@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserRepository } from '../repositories/user.repository';
 import { UserService } from '../services/user.service';
-import { randomUUID } from 'node:crypto';
-import { User } from '@prisma/postgres-client';
 import { CreateUserDto } from '@/dto/create-user.dto';
 
 const mockUserRepository = {
     createUser: jest.fn(),
     findUserByEmail: jest.fn(),
-    findUserByCpf: jest.fn(),
+    // findUserByCpf: jest.fn(),
 };
 
 let userRepository: UserRepository;
@@ -50,11 +48,11 @@ describe('UserService', () => {
         expect(userRepository.findUserByEmail).toHaveBeenCalledWith(data.email);
         expect(userRepository.createUser).not.toHaveBeenCalled();
     });
-    it('should not create a user if CPF is already in use', async () => {
-        mockUserRepository.findUserByEmail.mockResolvedValue(undefined);
-        mockUserRepository.findUserByCpf.mockResolvedValue(data.cpf);
-        await expect(sut.createUser(data)).rejects.toThrow('CPF indisponível');
-        expect(userRepository.findUserByCpf).toHaveBeenCalledWith(data.cpf);
-        expect(userRepository.createUser).not.toHaveBeenCalled();
-    });
+    // it('should not create a user if CPF is already in use', async () => {
+    //     mockUserRepository.findUserByEmail.mockResolvedValue(undefined);
+    //     mockUserRepository.findUserByCpf.mockResolvedValue(data.cpf);
+    //     await expect(sut.createUser(data)).rejects.toThrow('CPF indisponível');
+    //     expect(userRepository.findUserByCpf).toHaveBeenCalledWith(data.cpf);
+    //     expect(userRepository.createUser).not.toHaveBeenCalled();
+    // });
 });

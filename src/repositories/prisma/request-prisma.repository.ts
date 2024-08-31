@@ -17,6 +17,7 @@ export class RequestPrismaRepository implements RequestRepository {
         private attachmentPrismaRepository: AttachmentPrismaRepository,
         private serviceTokenPrismaRepository: ServiceTokenPrismaRepository,
     ) {}
+
     async createRequest(
         { date, patientId, serviceTokenId }: CreateRequestDto,
         files?: Array<Express.Multer.File>,
@@ -58,6 +59,9 @@ export class RequestPrismaRepository implements RequestRepository {
             },
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi achada');
+        if (result.status !== RequestStatus.CONFIRMED && result.status !== RequestStatus.PENDING) {
+            throw new NotFoundException(`A requisição não está disponível para ser completa`);
+        }
 
         return await this.prisma.request.update({
             where: {
@@ -85,6 +89,9 @@ export class RequestPrismaRepository implements RequestRepository {
                 )}`,
             );
         }
+        if (result.status !== RequestStatus.CONFIRMED && result.status !== RequestStatus.PENDING) {
+            throw new NotFoundException(`A requisição não está disponível para cancelamento`);
+        }
 
         return await this.prisma.request.update({
             where: {
@@ -92,6 +99,66 @@ export class RequestPrismaRepository implements RequestRepository {
             },
             data: {
                 status: RequestStatus.CANCELLED,
+            },
+        });
+    }
+
+    async acceptRequest(requestId: string): Promise<any> {
+        const result = await this.prisma.request.findUnique({
+            where: {
+                id: requestId,
+            },
+        });
+        if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
+        if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
+            throw new NotFoundException(`A requisição não está mais disponível`);
+        }
+
+        return await this.prisma.request.update({
+            where: {
+                id: requestId,
+            },
+            data: {
+                status: RequestStatus.ACCEPTED,
+            },
+        });
+    }
+    async denyRequest(requestId: string): Promise<any> {
+        const result = await this.prisma.request.findUnique({
+            where: {
+                id: requestId,
+            },
+        });
+        if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
+        if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
+            throw new NotFoundException(`A requisição não está disponível para negação`);
+        }
+
+        return await this.prisma.request.update({
+            where: {
+                id: requestId,
+            },
+            data: {
+                status: RequestStatus.DENIED,
+            },
+        });
+    }
+    async confirmRequest(requestId: string): Promise<any> {
+        const result = await this.prisma.request.findUnique({
+            where: {
+                id: requestId,
+            },
+        });
+        if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
+        if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
+            throw new NotFoundException(`A requisição não está disponível para confirmação`);
+        }
+        return await this.prisma.request.update({
+            where: {
+                id: requestId,
+            },
+            data: {
+                status: RequestStatus.CONFIRMED,
             },
         });
     }

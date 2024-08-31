@@ -4,7 +4,7 @@ import { UserRole } from '@prisma/postgres-client';
 export class CreateUserDto {
     @IsEmail()
     @IsOptional()
-    email?: string;
+    email: string;
 
     @IsString()
     @IsNotEmpty()
