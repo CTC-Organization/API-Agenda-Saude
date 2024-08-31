@@ -42,6 +42,15 @@ export class RequestPrismaRepository implements RequestRepository {
         await this.serviceTokenPrismaRepository.completeServiceTokenByPatientId(patientId);
         return request;
     }
+    async listAllRequests(): Promise<any> {
+        return await this.prisma.request.findMany({
+            include: {
+                patient: true,
+                serviceToken: true,
+                attachments: true,
+            },
+        });
+    }
     async updateRequest({ date, requestId }: UpdateRequestDto) {
         const data: any = {};
         if (!!date) data.date = new Date(date);

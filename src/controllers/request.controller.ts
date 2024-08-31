@@ -20,6 +20,8 @@ import { UpdateRequestDto } from '@/dto/update-request.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UserInterceptor } from '@/commons/interceptors/user.interceptor';
 import { ApiTags } from '@nestjs/swagger';
+import { getISODay } from 'date-fns';
+import { ValidateIsAdminOrEmployee } from '@/commons/guards/validate-admin-or-employee.guard';
 
 @UseGuards(AuthGuard)
 @UseInterceptors(UserInterceptor)
@@ -97,5 +99,11 @@ export class RequestController {
     @Patch('confirm/:id')
     async confirmRequest(@Param('id') id: string) {
         return await this.requestService.confirmRequest(id);
+    }
+
+    // @UseGuards(ValidateIsAdminOrEmployee)
+    @Get()
+    async listAllRequests() {
+        return await this.requestService.listAllRequests();
     }
 }

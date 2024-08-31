@@ -42,6 +42,9 @@ export class RequestService {
             throw err;
         }
     }
+    async listAllRequests() {
+        return await this.requestRepository.listAllRequests();
+    }
     async updateRequest(updateRequestDto: UpdateRequestDto) {
         try {
             if (!(await this.patientRepository.findPatientById(updateRequestDto.patientId))) {
