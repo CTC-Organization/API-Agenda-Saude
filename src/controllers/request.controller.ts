@@ -30,6 +30,28 @@ import { ValidateIsAdminOrEmployee } from '@/commons/guards/validate-admin-or-em
 export class RequestController {
     constructor(private readonly requestService: RequestService) {}
 
+    @Post('request-without-service-token')
+    @UseInterceptors(AnyFilesInterceptor())
+    async createRequestWithoutServiceToken(
+        @Req() req: any,
+        @UploadedFiles(
+            new ParseFilePipe({
+                fileIsRequired: false,
+                validators: [
+                    new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf)$/ }),
+                    new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
+                ],
+            }),
+        )
+        files?: Array<Express.Multer.File>,
+    ) {
+        return await this.requestService.createRequestWithoutServiceToken(
+            {
+                patientId: req.user.id,
+            },
+            files,
+        );
+    }
     @Post()
     @UseInterceptors(AnyFilesInterceptor())
     async createRequest(

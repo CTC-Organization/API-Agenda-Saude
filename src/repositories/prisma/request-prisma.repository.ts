@@ -8,6 +8,7 @@ import { UpdateRequestDto } from '../../dto/update-request.dto';
 import { AttachmentPrismaRepository } from './attachment-prisma.repository';
 import { ServiceTokenPrismaRepository } from './service-token-prisma.repository';
 import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';
+import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
 
 @Injectable()
 export class RequestPrismaRepository implements RequestRepository {
@@ -17,6 +18,37 @@ export class RequestPrismaRepository implements RequestRepository {
         private attachmentPrismaRepository: AttachmentPrismaRepository,
         private serviceTokenPrismaRepository: ServiceTokenPrismaRepository,
     ) {}
+
+    async createRequestWithoutServiceToken(
+        { patientId }: CreateRequestWithoutServiceTokenDto,
+        files?: Array<Express.Multer.File>,
+    ) {
+        const date = new Date();
+        date.setDate(date.getDate() + 2); // seria pelo lado admin do sus
+        const serviceToken = await this.serviceTokenPrismaRepository.createServiceToken({
+            patientId: patientId,
+            expirationDate: date.toISOString(),
+        });
+        const request = await this.prisma.request.create({
+            data: {
+                date,
+                patientId,
+                serviceTokenId: serviceToken.id,
+                status: RequestStatus.PENDING,
+            },
+        });
+        if (!!request && files?.length > 0) {
+            await this.attachmentPrismaRepository.createAttachments({
+                attachmentType: AttachmentType.REQUEST_ATTACHMENT,
+                files,
+                referenceId: request.id,
+                folder: 'request_attachments',
+            });
+        }
+
+        await this.serviceTokenPrismaRepository.completeServiceTokenByPatientId(patientId);
+        return request;
+    }
 
     async createRequest(
         { date, patientId, serviceTokenId }: CreateRequestDto,

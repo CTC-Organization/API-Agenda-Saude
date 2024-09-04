@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRequestDto } from '@/dto/create-request.dto';
+import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
 import { RequestRepository } from '@/repositories/request.repository';
 import { ServiceTokenRepository } from '@/repositories/service-token.repository';
 import { PatientRepository } from '@/repositories/patient.repository';
@@ -13,6 +14,36 @@ export class RequestService {
         private serviceTokenRepository: ServiceTokenRepository,
         private patientRepository: PatientRepository,
     ) {}
+
+    async createRequestWithoutServiceToken(
+        { patientId }: CreateRequestWithoutServiceTokenDto,
+        files?: Array<Express.Multer.File>,
+    ) {
+        try {
+            // const serviceToken = await this.serviceTokenRepository.findValidServiceTokenByPatientId(
+            //     patientId,
+            // );
+
+            // if (!serviceToken) {
+            //     throw new NotFoundException(
+            //         'O paciente já possui uma ficha de atendimento em andamento',
+            //     );
+            // } else if (serviceToken.status !== ServiceStatus.PENDING) {
+            //     throw new BadRequestException('Ficha de Atendimento inválida');
+            // }
+            if (!(await this.patientRepository.findPatientById(patientId))) {
+                throw new NotFoundException('Paciente não encontrado');
+            }
+            return await this.requestRepository.createRequestWithoutServiceToken(
+                {
+                    patientId,
+                },
+                files,
+            );
+        } catch (err) {
+            throw err;
+        }
+    }
 
     async createRequest(
         { date, serviceTokenId, patientId }: CreateRequestDto,

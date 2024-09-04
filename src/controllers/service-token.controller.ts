@@ -16,9 +16,14 @@ export class ServiceTokenController {
     async listServiceTokensByPatientId(@Param('id') id: string) {
         return await this.servicetokenService.listServiceTokensByPatientId(id);
     }
-    @Get(':id')
+    @Get('list/:id')
     async findServiceTokenById(@Param('id') id: string) {
         return await this.servicetokenService.findServiceTokenById(id);
+    }
+
+    @Get('unique-valid/:id')
+    async findValidServiceTokenByPatientId(@Param('id') id: string) {
+        return await this.servicetokenService.findValidServiceTokenByPatientId(id);
     }
 
     @Post(':id')

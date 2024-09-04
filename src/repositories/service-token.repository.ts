@@ -5,5 +5,6 @@ export abstract class ServiceTokenRepository {
     abstract cancelServiceTokenByPatientId(id: string): Promise<any>;
     abstract completeServiceTokenByPatientId(id: string): Promise<any>;
     abstract findServiceTokenById(id: string): Promise<any>;
+    abstract findValidServiceTokenByPatientId(id: string): Promise<any>;
     abstract listServiceTokensByPatientId(id: string): Promise<any>;
 }
