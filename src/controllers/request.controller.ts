@@ -20,6 +20,7 @@ import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UserInterceptor } from '@/commons/interceptors/user.interceptor';
 import { ApiTags } from '@nestjs/swagger';
 import { request } from 'express';
+import { AcceptRequestDto } from '@/dto/accept-request.dto';
 
 @UseGuards(AuthGuard)
 @UseInterceptors(UserInterceptor)
@@ -84,7 +85,7 @@ export class RequestController {
     }
     @Post('resend/:id')
     @UseInterceptors(AnyFilesInterceptor())
-    async resendRequestWithoutServiceToken(
+    async resendRequest(
         @Param('id') requestId,
         @Req() req: any,
         @UploadedFiles(
@@ -127,8 +128,11 @@ export class RequestController {
     }
 
     @Patch('accept/:id')
-    async acceptRequest(@Param('id') id: string) {
-        return await this.requestService.acceptRequest(id);
+    async acceptRequest(
+        @Param('id') requestId: string,
+        @Body() acceptRequestDto: AcceptRequestDto,
+    ) {
+        return await this.requestService.acceptRequest(requestId, acceptRequestDto);
     }
 
     @Patch('deny/:id')

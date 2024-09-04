@@ -6,6 +6,7 @@ import { ServiceTokenRepository } from '@/repositories/service-token.repository'
 import { PatientRepository } from '@/repositories/patient.repository';
 import { ServiceStatus } from '@prisma/postgres-client';
 import { ResendRequestDto } from '@/dto/resend-request.dto';
+import { AcceptRequestDto } from '@/dto/accept-request.dto';
 
 @Injectable()
 export class RequestService {
@@ -122,8 +123,8 @@ export class RequestService {
         }
         return result;
     }
-    async acceptRequest(id: string) {
-        const result = await this.requestRepository.acceptRequest(id);
+    async acceptRequest(requestId: string, acceptRequestDto: AcceptRequestDto) {
+        const result = await this.requestRepository.acceptRequest(requestId, acceptRequestDto);
         if (!result) {
             throw new NotFoundException('Requisição não encontrada');
         }

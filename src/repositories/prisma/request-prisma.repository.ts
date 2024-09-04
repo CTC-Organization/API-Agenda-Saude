@@ -1,4 +1,10 @@
-import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
 import { RequestRepository } from '../request.repository';
 import { CreateRequestDto } from '../../dto/create-request.dto';
@@ -10,7 +16,7 @@ import { ServiceTokenPrismaRepository } from './service-token-prisma.repository'
 import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';
 import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { AcceptRequestDto } from '@/dto/resend-request.dto copy';
+import { AcceptRequestDto } from '@/dto/accept-request.dto';
 
 @Injectable()
 export class RequestPrismaRepository implements RequestRepository {
@@ -89,8 +95,20 @@ export class RequestPrismaRepository implements RequestRepository {
         { patientId, requestId }: ResendRequestDto,
         files?: Array<Express.Multer.File>,
     ) {
+        const request = await this.prisma.request.findFirst({
+            where: { id: requestId },
+            include: {
+                attachments: true,
+            },
+        });
+        if (request.status !== RequestStatus.DENIED) {
+            throw new BadRequestException('A requisição não foi negada, não pode ser reenviada');
+        }
+        // só pode reenviar se foi negado
         // apagando anexos e requisição anterior antes de recriar uma requisição (reenvio)
-        await this.attachmentPrismaRepository.deleteAttachmentsByRequestId(requestId);
+        if (request.attachments?.length > 0) {
+            await this.attachmentPrismaRepository.deleteAttachmentsByRequestId(requestId);
+        }
 
         await this.prisma.request.delete({
             where: {
@@ -161,14 +179,10 @@ export class RequestPrismaRepository implements RequestRepository {
     // seleciona lat e long, o doutor de uma especialidade (criar lista fictícia no flutter)
     // e a data do exame/consulta
     // resumo: inserir lat, long, doctorName, date
-    async acceptRequest({
-        date,
-        especiality,
-        doctorName,
-        longitude,
-        latitude,
-        requestId,
-    }: AcceptRequestDto): Promise<any> {
+    async acceptRequest(
+        requestId: string,
+        { date, specialty, doctorName, longitude, latitude }: AcceptRequestDto,
+    ): Promise<any> {
         const result = await this.prisma.request.findUnique({
             where: {
                 id: requestId,
@@ -185,7 +199,7 @@ export class RequestPrismaRepository implements RequestRepository {
             },
             data: {
                 date,
-                especiality,
+                specialty,
                 doctorName,
                 longitude,
                 latitude,

@@ -1,7 +1,7 @@
 import { ResendRequestDto } from '../dto/resend-request.dto';
 import { CreateRequestDto } from '../dto/create-request.dto';
 import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
-import { AcceptRequestDto } from '@/dto/resend-request.dto copy';
+import { AcceptRequestDto } from '@/dto/accept-request.dto';
 
 export abstract class RequestRepository {
     abstract createRequest(
@@ -24,7 +24,7 @@ export abstract class RequestRepository {
     abstract findRequestById(id: string): Promise<any>;
     abstract listRequestsByPatientId(id: string): Promise<any>;
     abstract listAllRequests(): Promise<any>;
-    abstract acceptRequest(acceptRequestDto: AcceptRequestDto): Promise<any>;
+    abstract acceptRequest(requestId: string, acceptRequestDto: AcceptRequestDto): Promise<any>;
     abstract denyRequest(id: string): Promise<any>;
     abstract confirmRequest(id: string): Promise<any>;
 }
