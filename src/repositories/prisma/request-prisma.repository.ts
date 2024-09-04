@@ -244,7 +244,7 @@ export class RequestPrismaRepository implements RequestRepository {
             },
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 4');
-        if (result.status === RequestStatus.PENDING && new Date(result.date) < new Date()) {
+        if ((result.status === RequestStatus.PENDING || result.status === RequestStatus.CONFIRMED) && new Date(result.date) < new Date()) {
             await this.prisma.request.update({
                 where: {
                     id: result.id,
@@ -271,7 +271,7 @@ export class RequestPrismaRepository implements RequestRepository {
         if (result?.length) {
             const now = new Date(); // agora'
             const filteredRequestsIds = result
-                .filter((r) => r.status === RequestStatus.PENDING && new Date(r.date) < now) // expirationDate === agora então não filtra
+                .filter((r) => (r.status === RequestStatus.PENDING || r.status === RequestStatus.CONFIRMED) && new Date(r.date) < now) // expirationDate === agora então não filtra
                 .map((x) => x.id);
             if (filteredRequestsIds?.length) {
                 await this.prisma.request.updateMany({
