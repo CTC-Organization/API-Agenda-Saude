@@ -1,25 +1,30 @@
-import { UpdateRequestDto } from '../dto/update-request.dto';
+import { ResendRequestDto } from '../dto/resend-request.dto';
 import { CreateRequestDto } from '../dto/create-request.dto';
 import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
+import { AcceptRequestDto } from '@/dto/resend-request.dto copy';
 
 export abstract class RequestRepository {
     abstract createRequest(
         createRequestDto: CreateRequestDto,
         files?: Array<Express.Multer.File>,
     ): Promise<any>;
+
     abstract createRequestWithoutServiceToken(
         createRequestWithoutServiceTokenDto: CreateRequestWithoutServiceTokenDto,
         files?: Array<Express.Multer.File>,
     ): Promise<any>;
 
-    abstract updateRequest(updateRequestDto: UpdateRequestDto): Promise<any>;
+    abstract resendRequest(
+        resendRequestDto: ResendRequestDto,
+        files?: Array<Express.Multer.File>,
+    ): Promise<any>;
+
     abstract cancelRequest(id: string): Promise<any>;
     abstract completeRequest(id: string): Promise<any>;
     abstract findRequestById(id: string): Promise<any>;
     abstract listRequestsByPatientId(id: string): Promise<any>;
     abstract listAllRequests(): Promise<any>;
-
-    abstract acceptRequest(id: string): Promise<any>;
+    abstract acceptRequest(acceptRequestDto: AcceptRequestDto): Promise<any>;
     abstract denyRequest(id: string): Promise<any>;
     abstract confirmRequest(id: string): Promise<any>;
 }

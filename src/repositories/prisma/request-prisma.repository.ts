@@ -4,11 +4,13 @@ import { RequestRepository } from '../request.repository';
 import { CreateRequestDto } from '../../dto/create-request.dto';
 import { AttachmentType, RequestStatus } from '@prisma/postgres-client';
 
-import { UpdateRequestDto } from '../../dto/update-request.dto';
+import { ResendRequestDto } from '../../dto/resend-request.dto';
 import { AttachmentPrismaRepository } from './attachment-prisma.repository';
 import { ServiceTokenPrismaRepository } from './service-token-prisma.repository';
 import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';
 import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { AcceptRequestDto } from '@/dto/resend-request.dto copy';
 
 @Injectable()
 export class RequestPrismaRepository implements RequestRepository {
@@ -31,7 +33,6 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         const request = await this.prisma.request.create({
             data: {
-                date,
                 patientId,
                 serviceTokenId: serviceToken.id,
                 status: RequestStatus.PENDING,
@@ -46,6 +47,7 @@ export class RequestPrismaRepository implements RequestRepository {
             });
         }
 
+        // ficha de marcação de atendimento já utilizada
         await this.serviceTokenPrismaRepository.completeServiceTokenByPatientId(patientId);
         return request;
     }
@@ -83,15 +85,26 @@ export class RequestPrismaRepository implements RequestRepository {
             },
         });
     }
-    async updateRequest({ date, requestId }: UpdateRequestDto) {
-        const data: any = {};
-        if (!!date) data.date = new Date(date);
-        return await this.prisma.request.update({
+    async resendRequest(
+        { patientId, requestId }: ResendRequestDto,
+        files?: Array<Express.Multer.File>,
+    ) {
+        // apagando anexos e requisição anterior antes de recriar uma requisição (reenvio)
+        await this.attachmentPrismaRepository.deleteAttachmentsByRequestId(requestId);
+
+        await this.prisma.request.delete({
             where: {
                 id: requestId,
             },
-            data,
         });
+        const createRequestWithoutServiceTokenDto: CreateRequestWithoutServiceTokenDto = {
+            patientId,
+        };
+        // recriando request
+        return await this.createRequestWithoutServiceToken(
+            createRequestWithoutServiceTokenDto,
+            files,
+        );
     }
     async completeRequest(requestId: string): Promise<any> {
         const result = await this.prisma.request.findUnique({
@@ -144,7 +157,18 @@ export class RequestPrismaRepository implements RequestRepository {
         });
     }
 
-    async acceptRequest(requestId: string): Promise<any> {
+    // Para aceitar uma requisição o admin/funcionário deve selecionar um posto de saúde
+    // seleciona lat e long, o doutor de uma especialidade (criar lista fictícia no flutter)
+    // e a data do exame/consulta
+    // resumo: inserir lat, long, doctorName, date
+    async acceptRequest({
+        date,
+        especiality,
+        doctorName,
+        longitude,
+        latitude,
+        requestId,
+    }: AcceptRequestDto): Promise<any> {
         const result = await this.prisma.request.findUnique({
             where: {
                 id: requestId,
@@ -160,6 +184,11 @@ export class RequestPrismaRepository implements RequestRepository {
                 id: requestId,
             },
             data: {
+                date,
+                especiality,
+                doctorName,
+                longitude,
+                latitude,
                 status: RequestStatus.ACCEPTED,
             },
         });

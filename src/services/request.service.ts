@@ -4,8 +4,8 @@ import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-withou
 import { RequestRepository } from '@/repositories/request.repository';
 import { ServiceTokenRepository } from '@/repositories/service-token.repository';
 import { PatientRepository } from '@/repositories/patient.repository';
-import { UpdateRequestDto } from '@/dto/update-request.dto';
 import { ServiceStatus } from '@prisma/postgres-client';
+import { ResendRequestDto } from '@/dto/resend-request.dto';
 
 @Injectable()
 export class RequestService {
@@ -20,17 +20,6 @@ export class RequestService {
         files?: Array<Express.Multer.File>,
     ) {
         try {
-            // const serviceToken = await this.serviceTokenRepository.findValidServiceTokenByPatientId(
-            //     patientId,
-            // );
-
-            // if (!serviceToken) {
-            //     throw new NotFoundException(
-            //         'O paciente já possui uma ficha de atendimento em andamento',
-            //     );
-            // } else if (serviceToken.status !== ServiceStatus.PENDING) {
-            //     throw new BadRequestException('Ficha de Atendimento inválida');
-            // }
             if (!(await this.patientRepository.findPatientById(patientId))) {
                 throw new NotFoundException('Paciente não encontrado');
             }
@@ -76,14 +65,14 @@ export class RequestService {
     async listAllRequests() {
         return await this.requestRepository.listAllRequests();
     }
-    async updateRequest(updateRequestDto: UpdateRequestDto) {
+    async resendRequest(resendRequestDto: ResendRequestDto, files?: Array<Express.Multer.File>) {
         try {
-            if (!(await this.patientRepository.findPatientById(updateRequestDto.patientId))) {
+            if (!(await this.patientRepository.findPatientById(resendRequestDto.patientId))) {
                 throw new NotFoundException('Paciente não encontrado para essa requisição');
             }
-            const result = await this.requestRepository.updateRequest(updateRequestDto);
+            const result = await this.requestRepository.resendRequest(resendRequestDto, files);
             if (!result) {
-                throw new NotFoundException('Requisição não encontrada para essa atualização');
+                throw new NotFoundException('O reenvio falhou');
             }
             return result;
         } catch (err) {

@@ -43,6 +43,8 @@ model User {
   admins       Admin[] // "Relacionamentos do prisma"
   employees    Employee[] // "Relacionamentos do prisma"
   refreshToken RefreshToken?
+  //latitude     // O admin já possui acesso ao posto do usuário
+  //longitude    // O admin já possui acesso ao posto do usuário
 
   @@map("users")
 }
@@ -111,10 +113,15 @@ model Request {
   serviceToken   ServiceToken  @relation(fields: [serviceTokenId], references: [id])
   serviceTokenId String        @map("service_token_id")
   status         RequestStatus @default(PENDING)
-  date           DateTime
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
   attachments    Attachment[]
+
+  date        DateTime?
+  latitude    String?
+  longitude   String?
+  doctorName  String?   @map("doctor_name")
+  especiality String?
 
   @@map("requests")
 }

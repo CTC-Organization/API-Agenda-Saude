@@ -16,12 +16,10 @@ import {
 import { RequestService } from '../services/request.service';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
 import { AuthGuard } from '../commons/guards/auth.guard';
-import { UpdateRequestDto } from '@/dto/update-request.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { UserInterceptor } from '@/commons/interceptors/user.interceptor';
 import { ApiTags } from '@nestjs/swagger';
-import { getISODay } from 'date-fns';
-import { ValidateIsAdminOrEmployee } from '@/commons/guards/validate-admin-or-employee.guard';
+import { request } from 'express';
 
 @UseGuards(AuthGuard)
 @UseInterceptors(UserInterceptor)
@@ -84,11 +82,31 @@ export class RequestController {
             files,
         );
     }
-
-    @Patch()
-    async updateRequest(@Req() req: any, @Body() { date, requestId }: UpdateRequestDto) {
-        return await this.requestService.updateRequest({ patientId: req.user.id, date, requestId });
+    @Post('resend/:id')
+    @UseInterceptors(AnyFilesInterceptor())
+    async resendRequestWithoutServiceToken(
+        @Param('id') requestId,
+        @Req() req: any,
+        @UploadedFiles(
+            new ParseFilePipe({
+                fileIsRequired: false,
+                validators: [
+                    new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf)$/ }),
+                    new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
+                ],
+            }),
+        )
+        files?: Array<Express.Multer.File>,
+    ) {
+        return await this.requestService.resendRequest(
+            {
+                requestId,
+                patientId: req.user.id,
+            },
+            files,
+        );
     }
+
     @Get(':id')
     async findRequestById(@Param('id') id: string) {
         return await this.requestService.findRequestById(id);

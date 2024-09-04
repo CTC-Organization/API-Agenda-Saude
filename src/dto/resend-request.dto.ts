@@ -1,10 +1,6 @@
 import { IsNotEmpty, IsUUID, IsDateString } from 'class-validator';
 
-export class UpdateRequestDto {
-    @IsNotEmpty()
-    @IsDateString()
-    date?: string;
-
+export class ResendRequestDto {
     @IsUUID()
     @IsNotEmpty()
     patientId: string;
