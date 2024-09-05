@@ -87,11 +87,10 @@ export class RequestController {
             files,
         );
     }
-    @Post('resend/:id')
+    @Post('resend')
     @UseInterceptors(AnyFilesInterceptor())
     async resendRequest(
-        @Param('id') requestId: string,
-        @Body() { patientId, specialty }: ResendRequestDto,
+        @Body() { patientId, specialty, requestId }: ResendRequestDto,
         @UploadedFiles(
             new ParseFilePipe({
                 fileIsRequired: false,
