@@ -12,7 +12,4 @@ export class AcceptRequestDto {
 
     @IsNotEmpty()
     doctorName: string;
-
-    @IsNotEmpty()
-    specialty: string;
 }

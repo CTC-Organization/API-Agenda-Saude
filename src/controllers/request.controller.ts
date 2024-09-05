@@ -21,6 +21,8 @@ import { UserInterceptor } from '@/commons/interceptors/user.interceptor';
 import { ApiTags } from '@nestjs/swagger';
 import { request } from 'express';
 import { AcceptRequestDto } from '@/dto/accept-request.dto';
+import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
+import { ResendRequestDto } from '@/dto/resend-request.dto';
 
 @UseGuards(AuthGuard)
 @UseInterceptors(UserInterceptor)
@@ -32,7 +34,7 @@ export class RequestController {
     @Post('request-without-service-token')
     @UseInterceptors(AnyFilesInterceptor())
     async createRequestWithoutServiceToken(
-        @Body() { patientId }: { patientId: string },
+        @Body() { patientId, specialty }: CreateRequestWithoutServiceTokenDto,
         @UploadedFiles(
             new ParseFilePipe({
                 fileIsRequired: false,
@@ -47,6 +49,7 @@ export class RequestController {
         return await this.requestService.createRequestWithoutServiceToken(
             {
                 patientId,
+                specialty,
             },
             files,
         );
@@ -88,7 +91,7 @@ export class RequestController {
     @UseInterceptors(AnyFilesInterceptor())
     async resendRequest(
         @Param('id') requestId: string,
-        @Body() { patientId }: { patientId: string },
+        @Body() { patientId, specialty }: ResendRequestDto,
         @UploadedFiles(
             new ParseFilePipe({
                 fileIsRequired: false,
@@ -104,6 +107,7 @@ export class RequestController {
             {
                 requestId,
                 patientId,
+                specialty,
             },
             files,
         );
@@ -137,7 +141,7 @@ export class RequestController {
     }
 
     @Patch('deny/:id')
-    async denyRequest(@Param('id') id: string, @Body() observation: string) {
+    async denyRequest(@Param('id') id: string, @Body() { observation }: { observation: string }) {
         return await this.requestService.denyRequest(id, observation);
     }
 

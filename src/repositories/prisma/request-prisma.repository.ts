@@ -28,7 +28,7 @@ export class RequestPrismaRepository implements RequestRepository {
     ) {}
 
     async createRequestWithoutServiceToken(
-        { patientId }: CreateRequestWithoutServiceTokenDto,
+        { patientId, specialty }: CreateRequestWithoutServiceTokenDto,
         files?: Array<Express.Multer.File>,
     ) {
         const date = new Date();
@@ -39,6 +39,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         const request = await this.prisma.request.create({
             data: {
+                specialty,
                 patientId,
                 serviceTokenId: serviceToken.id,
                 status: RequestStatus.PENDING,
@@ -92,7 +93,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
     }
     async resendRequest(
-        { patientId, requestId }: ResendRequestDto,
+        { patientId, requestId, specialty }: ResendRequestDto,
         files?: Array<Express.Multer.File>,
     ) {
         const request = await this.prisma.request.findFirst({
@@ -117,6 +118,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         const createRequestWithoutServiceTokenDto: CreateRequestWithoutServiceTokenDto = {
             patientId,
+            specialty,
         };
         // recriando request
         return await this.createRequestWithoutServiceToken(
@@ -132,7 +134,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi achada');
         if (result.status !== RequestStatus.CONFIRMED && result.status !== RequestStatus.PENDING) {
-            throw new NotFoundException(`A requisição não está disponível para ser completa`);
+            throw new BadRequestException(`A requisição não está disponível para ser completa`);
         }
 
         return await this.prisma.request.update({
@@ -154,7 +156,7 @@ export class RequestPrismaRepository implements RequestRepository {
             throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
         const isAllowedToCancelBody = isBeforeFiveBusinessDays(new Date(result.date));
         if (!isAllowedToCancelBody.isBeforeFiveBusinessDays) {
-            throw new NotFoundException(
+            throw new BadRequestException(
                 `Não foi possível cancelar a requisição a menos de 5 dias úteis.
                 Limite de cancelamento: ${formatDateToBrazilian(
                     isAllowedToCancelBody.dateFiveBusinessDaysAgo,
@@ -162,7 +164,7 @@ export class RequestPrismaRepository implements RequestRepository {
             );
         }
         if (result.status !== RequestStatus.CONFIRMED && result.status !== RequestStatus.PENDING) {
-            throw new NotFoundException(`A requisição não está disponível para cancelamento`);
+            throw new BadRequestException(`A requisição não está disponível para cancelamento`);
         }
 
         return await this.prisma.request.update({
@@ -181,7 +183,7 @@ export class RequestPrismaRepository implements RequestRepository {
     // resumo: inserir lat, long, doctorName, date
     async acceptRequest(
         requestId: string,
-        { date, specialty, doctorName, longitude, latitude }: AcceptRequestDto,
+        { date, doctorName, longitude, latitude }: AcceptRequestDto,
     ): Promise<any> {
         const result = await this.prisma.request.findUnique({
             where: {
@@ -190,7 +192,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
         if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
-            throw new NotFoundException(`A requisição não está mais disponível`);
+            throw new BadRequestException(`A requisição não está mais disponível`);
         }
 
         return await this.prisma.request.update({
@@ -199,7 +201,6 @@ export class RequestPrismaRepository implements RequestRepository {
             },
             data: {
                 date,
-                specialty,
                 doctorName,
                 longitude,
                 latitude,
@@ -215,7 +216,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
         if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
-            throw new NotFoundException(`A requisição não está disponível para negação`);
+            throw new BadRequestException(`A requisição não está disponível para negação`);
         }
         await this.prisma.request.update({
             where: {
@@ -223,9 +224,10 @@ export class RequestPrismaRepository implements RequestRepository {
             },
             data: {
                 status: RequestStatus.DENIED,
+                observation,
             },
         });
-        return observation;
+        return { observation };
     }
     async confirmRequest(requestId: string): Promise<any> {
         const result = await this.prisma.request.findUnique({
@@ -235,7 +237,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
         if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
-            throw new NotFoundException(`A requisição não está disponível para confirmação`);
+            throw new BadRequestException(`A requisição não está disponível para confirmação`);
         }
         return await this.prisma.request.update({
             where: {

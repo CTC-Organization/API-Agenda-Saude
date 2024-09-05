@@ -8,4 +8,7 @@ export class ResendRequestDto {
     @IsUUID()
     @IsNotEmpty()
     requestId: string;
+
+    @IsNotEmpty()
+    specialty: string;
 }

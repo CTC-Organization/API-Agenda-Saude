@@ -4,4 +4,7 @@ export class CreateRequestWithoutServiceTokenDto {
     @IsUUID()
     @IsNotEmpty()
     patientId: string;
+
+    @IsNotEmpty()
+    specialty: string;
 }

@@ -17,7 +17,7 @@ export class RequestService {
     ) {}
 
     async createRequestWithoutServiceToken(
-        { patientId }: CreateRequestWithoutServiceTokenDto,
+        { patientId, specialty }: CreateRequestWithoutServiceTokenDto,
         files?: Array<Express.Multer.File>,
     ) {
         try {
@@ -27,6 +27,7 @@ export class RequestService {
             return await this.requestRepository.createRequestWithoutServiceToken(
                 {
                     patientId,
+                    specialty,
                 },
                 files,
             );

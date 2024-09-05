@@ -117,11 +117,12 @@ model Request {
   updatedAt      DateTime      @updatedAt @map("updated_at")
   attachments    Attachment[]
 
-  date       DateTime?
-  latitude   String?
-  longitude  String?
-  doctorName String?   @map("doctor_name")
-  specialty  String?
+  date        DateTime?
+  latitude    String?
+  longitude   String?
+  doctorName  String?   @map("doctor_name")
+  specialty   String?
+  observation String?
 
   @@map("requests")
 }
