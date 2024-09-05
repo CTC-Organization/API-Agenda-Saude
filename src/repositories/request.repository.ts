@@ -25,6 +25,6 @@ export abstract class RequestRepository {
     abstract listRequestsByPatientId(id: string): Promise<any>;
     abstract listAllRequests(): Promise<any>;
     abstract acceptRequest(requestId: string, acceptRequestDto: AcceptRequestDto): Promise<any>;
-    abstract denyRequest(id: string): Promise<any>;
+    abstract denyRequest(id: string, observation: string): Promise<any>;
     abstract confirmRequest(id: string): Promise<any>;
 }

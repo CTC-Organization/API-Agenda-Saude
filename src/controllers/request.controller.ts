@@ -32,7 +32,7 @@ export class RequestController {
     @Post('request-without-service-token')
     @UseInterceptors(AnyFilesInterceptor())
     async createRequestWithoutServiceToken(
-        @Req() req: any,
+        @Body() { patientId }: { patientId: string },
         @UploadedFiles(
             new ParseFilePipe({
                 fileIsRequired: false,
@@ -46,7 +46,7 @@ export class RequestController {
     ) {
         return await this.requestService.createRequestWithoutServiceToken(
             {
-                patientId: req.user.id,
+                patientId,
             },
             files,
         );
@@ -54,14 +54,15 @@ export class RequestController {
     @Post()
     @UseInterceptors(AnyFilesInterceptor())
     async createRequest(
-        @Req() req: any,
         @Body()
         {
             date,
             serviceTokenId,
+            patientId,
         }: {
             date: string;
             serviceTokenId: string;
+            patientId: string;
         },
         @UploadedFiles(
             new ParseFilePipe({
@@ -76,7 +77,7 @@ export class RequestController {
     ) {
         return await this.requestService.createRequest(
             {
-                patientId: req.user.id,
+                patientId,
                 date,
                 serviceTokenId,
             },
@@ -86,8 +87,8 @@ export class RequestController {
     @Post('resend/:id')
     @UseInterceptors(AnyFilesInterceptor())
     async resendRequest(
-        @Param('id') requestId,
-        @Req() req: any,
+        @Param('id') requestId: string,
+        @Body() { patientId }: { patientId: string },
         @UploadedFiles(
             new ParseFilePipe({
                 fileIsRequired: false,
@@ -102,7 +103,7 @@ export class RequestController {
         return await this.requestService.resendRequest(
             {
                 requestId,
-                patientId: req.user.id,
+                patientId,
             },
             files,
         );
@@ -136,8 +137,8 @@ export class RequestController {
     }
 
     @Patch('deny/:id')
-    async denyRequest(@Param('id') id: string) {
-        return await this.requestService.denyRequest(id);
+    async denyRequest(@Param('id') id: string, @Body() observation: string) {
+        return await this.requestService.denyRequest(id, observation);
     }
 
     @Patch('confirm/:id')

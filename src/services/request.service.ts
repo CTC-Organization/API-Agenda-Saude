@@ -116,8 +116,8 @@ export class RequestService {
         }
         return result;
     }
-    async denyRequest(id: string) {
-        const result = await this.requestRepository.denyRequest(id);
+    async denyRequest(id: string, observation: string) {
+        const result = await this.requestRepository.denyRequest(id, observation);
         if (!result) {
             throw new NotFoundException('Requisição não encontrada');
         }
