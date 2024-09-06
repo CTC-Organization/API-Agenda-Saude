@@ -154,7 +154,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         if (!result)
             throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
-        const isAllowedToCancelBody = isBeforeFiveBusinessDays(new Date(result.date));
+        const isAllowedToCancelBody = isBeforeFiveBusinessDays(new Date(result?.date));
         if (!isAllowedToCancelBody.isBeforeFiveBusinessDays) {
             throw new BadRequestException(
                 `Não foi possível cancelar a requisição a menos de 5 dias úteis.
@@ -263,7 +263,8 @@ export class RequestPrismaRepository implements RequestRepository {
         if (
             (result.status === RequestStatus.PENDING ||
                 result.status === RequestStatus.CONFIRMED) &&
-            new Date(result.date) < new Date()
+            result?.date &&
+            new Date(result?.date) < new Date()
         ) {
             await this.prisma.request.update({
                 where: {
@@ -295,7 +296,8 @@ export class RequestPrismaRepository implements RequestRepository {
                     (r) =>
                         (r.status === RequestStatus.PENDING ||
                             r.status === RequestStatus.CONFIRMED) &&
-                        new Date(r.date) < now,
+                        r?.date &&
+                        new Date(r?.date) < now,
                 ) // expirationDate === agora então não filtra
                 .map((x) => x.id);
             if (filteredRequestsIds?.length) {

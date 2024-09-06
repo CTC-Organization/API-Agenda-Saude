@@ -23,6 +23,7 @@ import { request } from 'express';
 import { AcceptRequestDto } from '@/dto/accept-request.dto';
 import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
 import { ResendRequestDto } from '@/dto/resend-request.dto';
+import { ValidateIsAdminOrEmployee } from '@/commons/guards/validate-admin-or-employee.guard';
 
 @UseGuards(AuthGuard)
 @UseInterceptors(UserInterceptor)
@@ -88,6 +89,7 @@ export class RequestController {
         );
     }
     @Post('resend')
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @UseInterceptors(AnyFilesInterceptor())
     async resendRequest(
         @Body() { patientId, specialty, requestId }: ResendRequestDto,
@@ -113,6 +115,7 @@ export class RequestController {
     }
 
     @Get(':id')
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     async findRequestById(@Param('id') id: string) {
         return await this.requestService.findRequestById(id);
     }
@@ -122,16 +125,19 @@ export class RequestController {
         return await this.requestService.listRequestsByPatientId(id);
     }
     @Patch('cancel/:id')
+    @UseInterceptors(UserInterceptor)
     async cancelRequest(@Param('id') id: string) {
         return await this.requestService.cancelRequest(id);
     }
 
     @Patch('complete/:id')
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     async completeRequest(@Param('id') id: string) {
         return await this.requestService.completeRequest(id);
     }
 
     @Patch('accept/:id')
+    @UseGuards(ValidateIsAdminOrEmployee)
     async acceptRequest(
         @Param('id') requestId: string,
         @Body() acceptRequestDto: AcceptRequestDto,
@@ -139,11 +145,13 @@ export class RequestController {
         return await this.requestService.acceptRequest(requestId, acceptRequestDto);
     }
 
+    @UseGuards(ValidateIsAdminOrEmployee)
     @Patch('deny/:id')
     async denyRequest(@Param('id') id: string, @Body() { observation }: { observation: string }) {
         return await this.requestService.denyRequest(id, observation);
     }
 
+    @UseGuards(ValidateIsAdminOrEmployee)
     @Patch('confirm/:id')
     async confirmRequest(@Param('id') id: string) {
         return await this.requestService.confirmRequest(id);
@@ -151,6 +159,7 @@ export class RequestController {
 
     // @UseGuards(ValidateIsAdminOrEmployee)
     @Get()
+    @UseGuards(ValidateIsAdminOrEmployee)
     async listAllRequests() {
         return await this.requestService.listAllRequests();
     }
