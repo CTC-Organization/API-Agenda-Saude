@@ -50,9 +50,13 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
             if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
                 if (!(await this.requestPrismaRepository.findRequestById(referenceId)))
                     throw new NotFoundException('RequisiçfindRequestByIdão não foi encontrada');
-            const fileName = `${file.originalname}-${randomUUID()}`;
+            const fileName = `${randomUUID()}-${file.originalname}`;
             const blob = this.bucket.file(`${folder}/${fileName}}`);
-            const blobStream = blob.createWriteStream();
+            const blobStream = blob.createWriteStream({
+                metadata: {
+                    contentType: file.mimetype, // Defina o tipo de conteúdo
+                },
+            });
             const uploadPromise = new Promise<string>((resolve, reject) => {
                 blobStream.on('finish', async () => {
                     await blob.makePublic();
@@ -95,9 +99,13 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                 if (!(await this.requestPrismaRepository.findRequestById(referenceId)))
                     throw new NotFoundException('Requisição não foi encontrada');
             const uploadPromises = files.map(async (file) => {
-                const fileName = `${file.originalname}-${randomUUID()}`;
+                const fileName = `${randomUUID()}-${file.originalname}`;
                 const blob = this.bucket.file(`${folder}/${fileName}`);
-                const blobStream = blob.createWriteStream();
+                const blobStream = blob.createWriteStream({
+                    metadata: {
+                        contentType: file.mimetype, // Defina o tipo de conteúdo
+                    },
+                });
 
                 const uploadPromise = new Promise<string>((resolve, reject) => {
                     blobStream.on('finish', async () => {
