@@ -8,13 +8,14 @@ import { EnvConfigModule } from './env-config.module';
 import { AttachmentRepository } from '@/repositories/attachment.repository';
 import { ServiceTokenModule } from './service-token.module';
 import { AuthModule } from './auth.module';
+import { UserModule } from './user.module';
 
 @Module({
     imports: [
-        AuthModule,
         forwardRef(() => EnvConfigModule),
-        ServiceTokenModule,
         forwardRef(() => RequestModule),
+        UserModule,
+        forwardRef(() => AuthModule),
     ],
     controllers: [AttachmentController],
     providers: [

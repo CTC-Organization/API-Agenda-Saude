@@ -71,11 +71,15 @@ export class PatientService {
     //     if (!result) throw new NotFoundException('Paciente não encontrado');
     //     return result;
     // }
-    async updatePatient(id: string, updatePatientDto: UpdatePatientDto) {
+    async updatePatient(
+        id: string,
+        updatePatientDto: UpdatePatientDto,
+        file?: Express.Multer.File,
+    ) {
         if (updatePatientDto?.password) {
             updatePatientDto.password = await argon2.hash(updatePatientDto.password);
         }
-        const result = await this.patientRepository.updatePatient(id, updatePatientDto);
+        const result = await this.patientRepository.updatePatient(id, updatePatientDto, file);
         if (!result) throw new NotFoundException('Paciente não encontrado');
         return result;
     }

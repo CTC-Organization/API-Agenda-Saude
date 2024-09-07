@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { CreateAttachmentsDto } from '../../dto/create-attachments.dto';
 import { RequestPrismaRepository } from './request-prisma.repository';
 import { Bucket, Storage } from '@google-cloud/storage';
+import { UserPrismaRepository } from './user-prisma.repository';
 
 @Injectable()
 export class AttachmentPrismaRepository implements AttachmentRepository {
@@ -15,10 +16,11 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
     constructor(
         private prisma: PrismaService,
+        private envConfigService: EnvConfigService,
+        @Inject(forwardRef(() => UserPrismaRepository))
+        private userPrismaRepository: UserPrismaRepository,
         @Inject(forwardRef(() => RequestPrismaRepository))
         private requestPrismaRepository: RequestPrismaRepository,
-
-        private envConfigService: EnvConfigService,
     ) {
         const credentials = JSON.parse(this.envConfigService.getGoogleCloudCredentials());
         const storage = new Storage({
@@ -47,14 +49,16 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
      */
     async createAttachment({ file, referenceId, attachmentType, folder }: CreateAttachmentDto) {
         try {
-            if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
+            if (attachmentType === AttachmentType.REQUEST_ATTACHMENT) {
                 if (!(await this.requestPrismaRepository.findRequestById(referenceId)))
                     throw new NotFoundException('RequisiçfindRequestByIdão não foi encontrada');
-            const fileName = `${randomUUID()}-${file.originalname}`;
+            }
+
+            const fileName = `${randomUUID()}-${file[0].originalname}`;
             const blob = this.bucket.file(`${folder}/${fileName}}`);
             const blobStream = blob.createWriteStream({
                 metadata: {
-                    contentType: file.mimetype, // Defina o tipo de conteúdo
+                    contentType: file[0].mimetype, // Defina o tipo de conteúdo
                 },
             });
             const uploadPromise = new Promise<string>((resolve, reject) => {
@@ -67,7 +71,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                     reject(err);
                 });
             });
-            blobStream.end(file.buffer);
+            blobStream.end(file[0].buffer);
             const publicUrl = await uploadPromise;
 
             return await this.prisma.attachment.create({
@@ -95,9 +99,11 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
     async createAttachments({ files, referenceId, attachmentType, folder }: CreateAttachmentsDto) {
         try {
-            if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
+            if (attachmentType === AttachmentType.REQUEST_ATTACHMENT) {
                 if (!(await this.requestPrismaRepository.findRequestById(referenceId)))
                     throw new NotFoundException('Requisição não foi encontrada');
+            }
+
             const uploadPromises = files.map(async (file) => {
                 const fileName = `${randomUUID()}-${file.originalname}`;
                 const blob = this.bucket.file(`${folder}/${fileName}`);

@@ -69,6 +69,7 @@ export class UserPrismaRepository implements UserRepository {
         delete user.password;
         return user;
     }
+
     async updateUser({
         id,
         email,

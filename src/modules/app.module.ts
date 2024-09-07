@@ -14,6 +14,7 @@ import { HealthDistrictModule } from './health-district.module';
 import { UsfModule } from './usf.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EnvConfigService } from '@/services/env-config.service';
+import { UploadModule } from './upload.module';
 
 @Module({
     imports: [
@@ -32,6 +33,7 @@ import { EnvConfigService } from '@/services/env-config.service';
         ServiceTokenModule,
         RequestModule,
         AttachmentModule,
+        UploadModule,
         HealthDistrictModule,
         UsfModule,
     ],
