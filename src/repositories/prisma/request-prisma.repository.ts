@@ -155,7 +155,10 @@ export class RequestPrismaRepository implements RequestRepository {
         if (!result)
             throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
         const isAllowedToCancelBody = isBeforeFiveBusinessDays(new Date(result?.date));
-        if (!isAllowedToCancelBody.isBeforeFiveBusinessDays) {
+        if (
+            !isAllowedToCancelBody.isBeforeFiveBusinessDays &&
+            result.status !== RequestStatus.PENDING
+        ) {
             throw new BadRequestException(
                 `Não foi possível cancelar a requisição a menos de 5 dias úteis.
                 Limite de cancelamento: ${formatDateToBrazilian(
