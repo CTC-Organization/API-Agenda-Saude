@@ -236,7 +236,7 @@ export class RequestPrismaRepository implements RequestRepository {
             },
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
-        if (result.status === RequestStatus.ACCEPTED) {
+        if (result.status !== RequestStatus.ACCEPTED) {
             throw new BadRequestException(`A requisição não está disponível para confirmação`);
         }
         return await this.prisma.request.update({
