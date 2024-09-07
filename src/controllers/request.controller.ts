@@ -37,6 +37,7 @@ export class RequestController {
     @Post('request-without-service-token')
     @UseInterceptors(AnyFilesInterceptor())
     async createRequestWithoutServiceToken(
+        @Req() req: any,
         @Body() { patientId, specialty }: CreateRequestWithoutServiceTokenDto,
         @UploadedFiles(
             new ParseFilePipe({
@@ -49,6 +50,11 @@ export class RequestController {
         )
         files?: Array<Express.Multer.File>,
     ) {
+        if (req.user.id !== patientId) {
+            throw new UnauthorizedException(
+                'Não é possível reenviar requisições para outros pacientes.',
+            );
+        }
         return await this.requestService.createRequestWithoutServiceToken(
             {
                 patientId,
@@ -60,6 +66,7 @@ export class RequestController {
     @Post()
     @UseInterceptors(AnyFilesInterceptor())
     async createRequest(
+        @Req() req: any,
         @Body()
         {
             date,
@@ -81,6 +88,11 @@ export class RequestController {
         )
         files?: Array<Express.Multer.File>,
     ) {
+        if (req.user.id !== patientId) {
+            throw new UnauthorizedException(
+                'Não é possível reenviar requisições para outros pacientes.',
+            );
+        }
         return await this.requestService.createRequest(
             {
                 patientId,

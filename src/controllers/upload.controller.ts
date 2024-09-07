@@ -21,9 +21,11 @@ import { AuthGuard } from '@/commons/guards/auth.guard';
 import { UploadType } from '@prisma/postgres-client';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
 import { ApiTags } from '@nestjs/swagger';
+import { ValidateIsUserSelf } from '@/commons/guards/validate-self.guard';
 
 @ApiTags('Anexos: uploads')
 @Controller('uploads')
+@UseInterceptors(UseInterceptors)
 @UseGuards(AuthGuard)
 export class UploadController {
     constructor(private readonly uploadService: UploadService) {}

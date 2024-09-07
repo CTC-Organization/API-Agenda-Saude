@@ -10,6 +10,7 @@ export class ValidateIsUserSelf implements CanActivate {
         const request: Request = context.switchToHttp().getRequest();
         const { authorization } = request.headers;
         try {
+            console.log(request.body);
             const user = await this.authService.checkToken((authorization ?? '').split(' ')[1]);
             if (
                 !(user.id === request.params.id || user.id === request?.body?.patientId) &&
