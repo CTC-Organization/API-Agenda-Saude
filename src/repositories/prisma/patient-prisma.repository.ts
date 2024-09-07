@@ -140,66 +140,80 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
     ): Promise<Patient | null> {
         const { email, password, name, phoneNumber, birthDate, susNumber, avatar } =
             updatePatientDto;
-        if (!!avatar) {
-            try {
-                await this.uploadService.deleteUpload(avatar);
-            } catch (err) {
-                throw new Error('erro 1: ' + err);
-            }
-        }
-        const patient = await this.findPatientById(id);
-        let upload: any;
-
-        if (!!file && !!patient) {
-            console.log(file);
-            try {
-                upload = await this.uploadService.createUpload({
-                    file: file,
-                    folder: 'avatars',
-                    uploadType: UploadType.AVATAR,
-                    referenceId: patient.userId,
-                });
-            } catch (err) {
-                throw new Error('erro 2: ' + err);
-            }
-        }
         const userData: any = {
-            avatar: upload?.id,
             email,
             password,
             name,
             phoneNumber,
         };
+        try {
+            const patient = await this.findPatientById(id);
 
-        if (!!birthDate) {
-            userData.birthDate = new Date(birthDate);
-        }
-        return await this.prisma.$transaction(async (prisma) => {
-            const patient = await prisma.patient.findUnique({
-                where: {
-                    id,
-                },
-            });
             if (!patient) throw new BadRequestException('Paciente não encontrado');
-            const result = await prisma.user.update({
-                where: {
-                    id: patient.userId,
-                },
-                data: userData,
-            });
-            await prisma.patient.update({
-                where: {
-                    id,
-                },
-                data: {
-                    susNumber,
-                },
-            });
 
-            result.id = id;
-            delete result.password;
+            if (!!avatar) {
+                const deletedAvatar = await this.uploadService.deleteUpload(avatar);
+                if (!!deletedAvatar) {
+                    await this.prisma.user.update({
+                        where: {
+                            id: patient.userId,
+                        },
+                        data: {
+                            avatar: null,
+                        },
+                    });
+                }
+            }
 
-            return { ...result, susNUmber: susNumber };
-        });
+            if (!!file && !!patient) {
+                try {
+                    const upload = await this.uploadService.createUpload({
+                        file: file,
+                        folder: 'avatars',
+                        uploadType: UploadType.AVATAR,
+                        referenceId: patient.userId,
+                    });
+                    if (!!upload) {
+                        await this.prisma.user.update({
+                            where: {
+                                id: patient.userId,
+                            },
+                            data: {
+                                avatar: upload.id,
+                            },
+                        });
+                    }
+                } catch (err) {
+                    throw new Error('erro 2: ' + err);
+                }
+            }
+
+            if (!!birthDate) {
+                userData.birthDate = new Date(birthDate);
+            }
+            return await this.prisma.$transaction(async (prisma) => {
+                const result = await prisma.user.update({
+                    where: {
+                        id: patient.userId,
+                    },
+                    data: userData,
+                });
+                await prisma.patient.update({
+                    where: {
+                        id,
+                    },
+                    data: {
+                        susNumber,
+                    },
+                });
+
+                result.id = id;
+                delete result.password;
+
+                return { ...result, susNUmber: susNumber };
+            });
+        } catch (err) {
+            throw new Error('erro 1: ' + err);
+        }
     }
 }

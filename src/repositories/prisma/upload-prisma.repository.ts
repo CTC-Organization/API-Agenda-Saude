@@ -33,11 +33,11 @@ export class UploadPrismaRepository implements UploadRepository {
                     throw new NotFoundException('Usuário não foi encontrado');
             }
             console.log(file);
-            const fileName = `${randomUUID()}-${file[0].originalname}`;
-            const blob = this.bucket.file(`${folder}/${fileName}}`);
+            const fileName = `${randomUUID()}-${file.originalname}`;
+            const blob = this.bucket.file(`${folder}/${fileName}`);
             const blobStream = blob.createWriteStream({
                 metadata: {
-                    contentType: file[0].mimetype, // Defina o tipo de conteúdo
+                    contentType: file.mimetype, // Defina o tipo de conteúdo
                 },
             });
             const uploadPromise = new Promise<string>((resolve, reject) => {
@@ -50,7 +50,7 @@ export class UploadPrismaRepository implements UploadRepository {
                     reject(err);
                 });
             });
-            blobStream.end(file[0].buffer);
+            blobStream.end(file.buffer);
             const publicUrl = await uploadPromise;
 
             return await this.prisma.upload.create({
@@ -201,7 +201,7 @@ export class UploadPrismaRepository implements UploadRepository {
             throw err;
         }
     }
-    async deleteUpload(uploadId: string): Promise<void> {
+    async deleteUpload(uploadId: string): Promise<any> {
         try {
             const upload = await this.prisma.upload.findUnique({
                 where: { id: uploadId },
@@ -210,11 +210,12 @@ export class UploadPrismaRepository implements UploadRepository {
             if (!upload) {
                 throw new NotFoundException('Upload not found');
             }
-            const blob = this.bucket.file(`${upload.folder}/${upload.name}`);
 
-            await blob.delete();
+            const filePath = `${upload.folder}/${upload.name}`;
 
-            await this.prisma.upload.delete({
+            await this.bucket.file(filePath).delete();
+
+            return await this.prisma.upload.delete({
                 where: { id: uploadId },
             });
         } catch (err) {

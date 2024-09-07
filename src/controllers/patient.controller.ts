@@ -12,6 +12,7 @@ import {
     UploadedFiles,
     MaxFileSizeValidator,
     FileTypeValidator,
+    UploadedFile,
 } from '@nestjs/common';
 import { PatientService } from '../services/patient.service';
 import { CreatePatientDto } from '@/dto/create-patient.dto';
@@ -20,7 +21,7 @@ import { ValidateIsUserSelfOrAdmin } from '../commons/guards/validate-self-or-ad
 import { AuthGuard } from '../commons/guards/auth.guard';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
 import { ApiTags } from '@nestjs/swagger';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 
 @ApiTags('Pacientes: patients')
 @Controller('patients')
@@ -51,16 +52,16 @@ export class PatientController {
     }
     @UseGuards(ValidateIsUserSelfOrAdmin)
     @UseGuards(AuthGuard)
-    @UseInterceptors(AnyFilesInterceptor())
+    @UseInterceptors(FileInterceptor('file'))
     @Patch(':id')
     async updatePatient(
         @Param('id') id: string,
         @Body() updatePatientDto: UpdatePatientDto,
-        @UploadedFiles(
+        @UploadedFile(
             new ParseFilePipe({
                 fileIsRequired: false,
                 validators: [
-                    new FileTypeValidator({ fileType: /(jpg|jpeg|png|pdf)$/ }),
+                    new FileTypeValidator({ fileType: /(jpg|jpeg|png)$/ }),
                     new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 5 }),
                 ],
             }),
