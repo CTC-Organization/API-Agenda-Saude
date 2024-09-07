@@ -151,13 +151,16 @@ export class RequestPrismaRepository implements RequestRepository {
             where: {
                 id: requestId,
             },
+            include: {
+                attachments: true,
+            },
         });
         if (!result)
             throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
         const isAllowedToCancelBody = isBeforeFiveBusinessDays(new Date(result?.date));
         if (
             !isAllowedToCancelBody.isBeforeFiveBusinessDays &&
-            result.status !== RequestStatus.PENDING
+            (result.status === RequestStatus.CONFIRMED || result.status === RequestStatus.ACCEPTED)
         ) {
             throw new BadRequestException(
                 `Não foi possível cancelar a requisição a menos de 5 dias úteis.
@@ -166,16 +169,17 @@ export class RequestPrismaRepository implements RequestRepository {
                 )}`,
             );
         }
-        if (result.status !== RequestStatus.CONFIRMED && result.status !== RequestStatus.PENDING) {
+        if (result.status === RequestStatus.EXPIRED || result.status !== RequestStatus.COMPLETED) {
             throw new BadRequestException(`A requisição não está disponível para cancelamento`);
         }
 
-        return await this.prisma.request.update({
+        if (result.attachments?.length > 0) {
+            await this.attachmentPrismaRepository.deleteAttachmentsByRequestId(requestId);
+        }
+
+        return await this.prisma.request.delete({
             where: {
                 id: requestId,
-            },
-            data: {
-                status: RequestStatus.CANCELLED,
             },
         });
     }

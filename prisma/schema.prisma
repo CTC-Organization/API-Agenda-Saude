@@ -103,7 +103,6 @@ model ServiceToken {
 }
 
 enum RequestStatus {
-  CANCELLED
   COMPLETED
   EXPIRED
   PENDING
