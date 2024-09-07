@@ -280,6 +280,11 @@ export class RequestPrismaRepository implements RequestRepository {
             include: {
                 serviceToken: true,
                 attachments: true,
+                patient: {
+                    include: {
+                        user: true, // Inclui os dados do usuário associados ao paciente
+                    },
+                }
             },
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 4');
