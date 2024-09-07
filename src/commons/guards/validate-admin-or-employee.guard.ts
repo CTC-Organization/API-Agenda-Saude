@@ -11,8 +11,6 @@ export class ValidateIsAdminOrEmployee implements CanActivate {
 
         try {
             const user = await this.authService.checkToken((authorization ?? '').split(' ')[1]);
-            console.log('user: ', user);
-            console.log('body: ', request?.body);
             if (!(user.role === UserRole.ADMIN) && !(user.role === UserRole.EMPLOYEE)) {
                 return false;
             }

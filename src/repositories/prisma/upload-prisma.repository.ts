@@ -32,7 +32,6 @@ export class UploadPrismaRepository implements UploadRepository {
                 if (!(await this.userPrismaRepository.findUserById(referenceId)))
                     throw new NotFoundException('Usuário não foi encontrado');
             }
-            console.log(file);
             const fileName = `${randomUUID()}-${file.originalname}`;
             const blob = this.bucket.file(`${folder}/${fileName}`);
             const blobStream = blob.createWriteStream({

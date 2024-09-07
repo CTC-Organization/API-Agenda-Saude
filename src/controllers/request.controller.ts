@@ -12,6 +12,7 @@ import {
     UploadedFiles,
     UseInterceptors,
     Req,
+    UnauthorizedException,
 } from '@nestjs/common';
 import { RequestService } from '../services/request.service';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
@@ -90,9 +91,9 @@ export class RequestController {
         );
     }
     @Post('resend')
-    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     @UseInterceptors(AnyFilesInterceptor())
     async resendRequest(
+        @Req() req: any,
         @Body() { patientId, specialty, requestId }: ResendRequestDto,
         @UploadedFiles(
             new ParseFilePipe({
@@ -105,6 +106,11 @@ export class RequestController {
         )
         files?: Array<Express.Multer.File>,
     ) {
+        if (req.user.id !== patientId) {
+            throw new UnauthorizedException(
+                'Não é possível reenviar requisições para outros pacientes.',
+            );
+        }
         return await this.requestService.resendRequest(
             {
                 requestId,
@@ -126,15 +132,30 @@ export class RequestController {
         return await this.requestService.listRequestsByPatientId(id);
     }
     @Patch('cancel/:id')
-    @UseInterceptors(UserInterceptor)
-    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    async cancelRequest(@Param('id') id: string) {
+    async cancelRequest(
+        @Req() req: any,
+        @Param('id') id: string,
+        @Body() { patientId }: { patientId: string },
+    ) {
+        if (req.user.id !== patientId) {
+            throw new UnauthorizedException(
+                'Não é possível reenviar requisições para outros pacientes.',
+            );
+        }
         return await this.requestService.cancelRequest(id);
     }
 
     @Patch('complete/:id')
-    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    async completeRequest(@Param('id') id: string) {
+    async completeRequest(
+        @Req() req: any,
+        @Param('id') id: string,
+        @Body() { patientId }: { patientId: string },
+    ) {
+        if (req.user.id !== patientId) {
+            throw new UnauthorizedException(
+                'Não é possível reenviar requisições para outros pacientes.',
+            );
+        }
         return await this.requestService.completeRequest(id);
     }
 
@@ -153,9 +174,17 @@ export class RequestController {
         return await this.requestService.denyRequest(id, observation);
     }
 
-    @UseGuards(ValidateIsUserSelf)
     @Patch('confirm/:id')
-    async confirmRequest(@Param('id') id: string) {
+    async confirmRequest(
+        @Req() req: any,
+        @Param('id') id: string,
+        @Body() { patientId }: { patientId: string },
+    ) {
+        if (req.user.id !== patientId) {
+            throw new UnauthorizedException(
+                'Não é possível reenviar requisições para outros pacientes.',
+            );
+        }
         return await this.requestService.confirmRequest(id);
     }
 

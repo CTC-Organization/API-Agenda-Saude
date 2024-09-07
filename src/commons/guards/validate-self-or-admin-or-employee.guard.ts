@@ -13,11 +13,9 @@ export class ValidateIsUserSelfOrAdminOrEmployee implements CanActivate {
         const { authorization } = request.headers;
         try {
             const user = await this.authService.checkToken((authorization ?? '').split(' ')[1]);
-            console.log('user: ', user);
-            console.log('body: ', request?.body);
             if (
                 !(user.id === request.params.id || user.id === request?.body?.patientId) &&
-                !(user.userId === request.params.id) &&
+                !(user?.userId === request.params.id) &&
                 !(user.role === UserRole.ADMIN) &&
                 !(user.role === UserRole.EMPLOYEE)
             ) {
