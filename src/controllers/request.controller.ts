@@ -24,6 +24,7 @@ import { AcceptRequestDto } from '@/dto/accept-request.dto';
 import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
 import { ResendRequestDto } from '@/dto/resend-request.dto';
 import { ValidateIsAdminOrEmployee } from '@/commons/guards/validate-admin-or-employee.guard';
+import { ValidateIsUserSelf } from '@/commons/guards/validate-self.guard';
 
 @UseGuards(AuthGuard)
 @UseInterceptors(UserInterceptor)
@@ -126,6 +127,7 @@ export class RequestController {
     }
     @Patch('cancel/:id')
     @UseInterceptors(UserInterceptor)
+    @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
     async cancelRequest(@Param('id') id: string) {
         return await this.requestService.cancelRequest(id);
     }
@@ -151,7 +153,7 @@ export class RequestController {
         return await this.requestService.denyRequest(id, observation);
     }
 
-    @UseGuards(ValidateIsAdminOrEmployee)
+    @UseGuards(ValidateIsUserSelf)
     @Patch('confirm/:id')
     async confirmRequest(@Param('id') id: string) {
         return await this.requestService.confirmRequest(id);
