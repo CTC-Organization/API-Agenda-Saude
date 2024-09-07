@@ -169,7 +169,7 @@ export class RequestPrismaRepository implements RequestRepository {
                 )}`,
             );
         }
-        if (result.status === RequestStatus.EXPIRED || result.status !== RequestStatus.COMPLETED) {
+        if (result.status === RequestStatus.EXPIRED || result.status === RequestStatus.COMPLETED) {
             throw new BadRequestException(`A requisição não está disponível para cancelamento`);
         }
 
