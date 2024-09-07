@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { UserPrismaRepository } from './user-prisma.repository';
 import { PrismaService } from '../../services/prisma.service';
 import { PatientRepository } from '../patient.repository';

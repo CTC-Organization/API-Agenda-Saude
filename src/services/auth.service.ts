@@ -44,6 +44,8 @@ export class AuthService {
         }
     }
 
+    
+
     async createToken(user: User) {
         // COMPLEMENTAR lógica do código comentado ao desenvolver ADMIN e EMPLOYEE
         // if (patient?.role !== UserRole.PATIENT)
