@@ -15,7 +15,6 @@ import { AttachmentPrismaRepository } from './attachment-prisma.repository';
 import { ServiceTokenPrismaRepository } from './service-token-prisma.repository';
 import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';
 import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { AcceptRequestDto } from '@/dto/accept-request.dto';
 
 @Injectable()
@@ -155,8 +154,7 @@ export class RequestPrismaRepository implements RequestRepository {
                 attachments: true,
             },
         });
-        if (!result)
-            throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
+        if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
         const isAllowedToCancelBody = isBeforeFiveBusinessDays(new Date(result?.date));
         if (
             !isAllowedToCancelBody.isBeforeFiveBusinessDays &&
@@ -169,10 +167,28 @@ export class RequestPrismaRepository implements RequestRepository {
                 )}`,
             );
         }
-        if (result.status === RequestStatus.EXPIRED || result.status === RequestStatus.COMPLETED) {
+        if (
+            result.status === RequestStatus.CANCELLED ||
+            result.status === RequestStatus.EXPIRED ||
+            result.status === RequestStatus.COMPLETED
+        ) {
             throw new BadRequestException(`A requisição não está disponível para cancelamento`);
         }
 
+        if (result.status === RequestStatus.ACCEPTED) {
+            if (result.attachments?.length > 0) {
+                await this.attachmentPrismaRepository.deleteAttachmentsByRequestId(requestId);
+            }
+
+            return await this.prisma.request.update({
+                where: {
+                    id: requestId,
+                },
+                data: {
+                    status: RequestStatus.CANCELLED,
+                },
+            });
+        }
         if (result.attachments?.length > 0) {
             await this.attachmentPrismaRepository.deleteAttachmentsByRequestId(requestId);
         }

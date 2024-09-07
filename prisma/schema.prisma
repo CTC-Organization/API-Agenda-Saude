@@ -109,6 +109,7 @@ enum RequestStatus {
   DENIED
   ACCEPTED
   CONFIRMED
+  CANCELLED
 }
 
 model Request {
