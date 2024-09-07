@@ -102,7 +102,7 @@ export class UploadPrismaRepository implements UploadRepository {
 
                 try {
                     const publicUrl = await uploadPromise;
-                    return { file, publicUrl };
+                    return { file, publicUrl, fileName };
                 } catch (err) {
                     console.error('Error during file upload:', err);
                     throw err;
@@ -111,12 +111,12 @@ export class UploadPrismaRepository implements UploadRepository {
 
             const uploadedFiles = await Promise.all(uploadPromises);
 
-            const uploadCreatePromises = uploadedFiles.map(({ file, publicUrl }) => {
+            const uploadCreatePromises = uploadedFiles.map(({ file, publicUrl, fileName }) => {
                 return this.prisma.upload.create({
                     data: {
                         id: randomUUID(),
                         type: uploadType,
-                        name: file.originalname,
+                        name: fileName,
                         url: publicUrl,
                         userId: referenceId,
                         folder,

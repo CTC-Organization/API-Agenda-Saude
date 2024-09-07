@@ -133,7 +133,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
                 try {
                     const publicUrl = await uploadPromise;
-                    return { file, publicUrl };
+                    return { file, publicUrl, fileName };
                 } catch (err) {
                     console.error('Error during file upload:', err);
                     throw err;
@@ -142,12 +142,12 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
             const uploadedFiles = await Promise.all(uploadPromises);
 
-            const attachmentCreatePromises = uploadedFiles.map(({ file, publicUrl }) => {
+            const attachmentCreatePromises = uploadedFiles.map(({ file, publicUrl, fileName }) => {
                 return this.prisma.attachment.create({
                     data: {
                         id: randomUUID(),
                         type: attachmentType,
-                        name: file.originalname,
+                        name: fileName,
                         url: publicUrl,
                         requestId: referenceId,
                         folder,
@@ -208,7 +208,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
             const attachments = await this.prisma.attachment.findMany({
                 where: { requestId },
             });
-            if (attachments.length === 0) {
+            if (attachments?.length === 0) {
                 throw new NotFoundException('Nenhum anexo encontrado');
             }
             if (attachments[0].type === AttachmentType.REQUEST_ATTACHMENT) {
