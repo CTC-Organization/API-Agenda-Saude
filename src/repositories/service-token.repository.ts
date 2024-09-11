@@ -7,4 +7,5 @@ export abstract class ServiceTokenRepository {
     abstract findServiceTokenById(id: string): Promise<any>;
     abstract findValidServiceTokenByPatientId(id: string): Promise<any>;
     abstract listServiceTokensByPatientId(id: string): Promise<any>;
+    abstract listAllServiceTokens(): Promise<any>;
 }

@@ -4,6 +4,7 @@ import { CreateServiceTokenDto } from '@/dto/create-service-token.dto';
 import { ValidateIsUserSelfOrAdminOrEmployee } from '@/commons/guards/validate-self-or-admin-or-employee.guard';
 import { AuthGuard } from '../commons/guards/auth.guard';
 import { ApiTags } from '@nestjs/swagger';
+import { ValidateIsAdminOrEmployee } from '@/commons/guards/validate-admin-or-employee.guard';
 
 @UseGuards(AuthGuard)
 @ApiTags('Fichas de atendimento: service-tokens')
@@ -21,6 +22,12 @@ export class ServiceTokenController {
         return await this.servicetokenService.findServiceTokenById(id);
     }
 
+    @Get()
+    @UseGuards(ValidateIsAdminOrEmployee)
+    async indexServiceTokens() {
+        return await this.servicetokenService.listAllServiceTokens();
+    }
+
     @Get('unique-valid/:id')
     async findValidServiceTokenByPatientId(@Param('id') id: string) {
         return await this.servicetokenService.findValidServiceTokenByPatientId(id);
@@ -28,13 +35,9 @@ export class ServiceTokenController {
 
     @Post(':id')
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    async createServiceToken(
-        @Param('id') id: string,
-        @Body() { expirationDate }: { expirationDate: string },
-    ) {
+    async createServiceToken(@Param('id') id: string) {
         return await this.servicetokenService.createServiceToken({
             patientId: id,
-            expirationDate: expirationDate,
         });
     }
 

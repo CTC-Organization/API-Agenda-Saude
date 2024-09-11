@@ -57,7 +57,7 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
             },
         });
     }
-    async createServiceToken({ patientId, expirationDate }: CreateServiceTokenDto) {
+    async createServiceToken({ patientId }: CreateServiceTokenDto) {
         try {
             const patient = await this.patientRepository.findPatientById(patientId);
             if (!patient) throw new BadRequestException('Paciente não encontrado');
@@ -75,10 +75,12 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
                     throw new BadRequestException('Há uma ficha pendente');
                 }
             }
+            const date = new Date();
+            date.setDate(date.getDate() + 1); // 1 dia
             return await this.prisma.serviceToken.create({
                 data: {
                     patientId,
-                    expirationDate,
+                    expirationDate: date,
                 },
             });
         } catch (err) {
@@ -147,6 +149,32 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
             },
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada');
+        if (result?.length) {
+            const now = new Date();
+            const filteredServiceTokensIds = result
+                .filter(
+                    (r) => r.status === ServiceStatus.PENDING && new Date(r.expirationDate) < now, // se expirationDate = undefined então now === expirationDate e não filtra
+                )
+                .map((x) => x.id);
+            if (filteredServiceTokensIds?.length) {
+                await this.prisma.serviceToken.updateMany({
+                    where: {
+                        id: {
+                            in: filteredServiceTokensIds,
+                        },
+                    },
+                    data: {
+                        status: ServiceStatus.EXPIRED,
+                    },
+                });
+            }
+        }
+        return result;
+    }
+
+    async listAllServiceTokens(): Promise<any> {
+        const result = await this.prisma.serviceToken.findMany({});
+        if (!result) throw new NotFoundException('Nenhuma ficha de atendimento não encontrada');
         if (result?.length) {
             const now = new Date();
             const filteredServiceTokensIds = result

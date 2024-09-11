@@ -37,7 +37,7 @@ export class RequestService {
     }
 
     async createRequest(
-        { date, serviceTokenId, patientId }: CreateRequestDto,
+        { serviceTokenId, patientId, specialty }: CreateRequestDto,
         files?: Array<Express.Multer.File>,
     ) {
         try {
@@ -54,8 +54,8 @@ export class RequestService {
             }
             return await this.requestRepository.createRequest(
                 {
+                    specialty,
                     patientId,
-                    date,
                     serviceTokenId,
                 },
                 files,

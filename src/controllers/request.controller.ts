@@ -69,11 +69,11 @@ export class RequestController {
         @Req() req: any,
         @Body()
         {
-            date,
+            specialty,
             serviceTokenId,
             patientId,
         }: {
-            date: string;
+            specialty: string;
             serviceTokenId: string;
             patientId: string;
         },
@@ -95,8 +95,8 @@ export class RequestController {
         }
         return await this.requestService.createRequest(
             {
+                specialty,
                 patientId,
-                date,
                 serviceTokenId,
             },
             files,

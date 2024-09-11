@@ -28,6 +28,11 @@ export class ServiceTokenService {
         return result;
     }
 
+    async listAllServiceTokens() {
+        const result = await this.servicetokenRepository.listAllServiceTokens();
+        return result;
+    }
+
     async cancelServiceTokenByPatientId(patientId: string) {
         const result = await this.servicetokenRepository.cancelServiceTokenByPatientId(patientId);
         return result;

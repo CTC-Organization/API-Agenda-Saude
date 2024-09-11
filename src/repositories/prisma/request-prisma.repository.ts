@@ -30,11 +30,14 @@ export class RequestPrismaRepository implements RequestRepository {
         { patientId, specialty }: CreateRequestWithoutServiceTokenDto,
         files?: Array<Express.Multer.File>,
     ) {
-        const date = new Date();
-        date.setDate(date.getDate() + 2); // seria pelo lado admin do sus
+        const foundServiceToken =
+            await this.serviceTokenPrismaRepository.findValidServiceTokenByPatientId(patientId);
+
+        if (!!foundServiceToken) {
+            throw new BadRequestException('O usuário já possui uma ficha em andamento');
+        }
         const serviceToken = await this.serviceTokenPrismaRepository.createServiceToken({
             patientId: patientId,
-            expirationDate: date.toISOString(),
         });
         const request = await this.prisma.request.create({
             data: {
@@ -59,7 +62,7 @@ export class RequestPrismaRepository implements RequestRepository {
     }
 
     async createRequest(
-        {  patientId, serviceTokenId,specialty }: CreateRequestDto,
+        { patientId, serviceTokenId, specialty }: CreateRequestDto,
         files?: Array<Express.Multer.File>,
     ) {
         const request = await this.prisma.request.create({
@@ -284,7 +287,7 @@ export class RequestPrismaRepository implements RequestRepository {
                     include: {
                         user: true, // Inclui os dados do usuário associados ao paciente
                     },
-                }
+                },
             },
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 4');
