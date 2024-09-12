@@ -222,6 +222,7 @@ export class RequestPrismaRepository implements RequestRepository {
         if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
             throw new BadRequestException(`A requisição não está mais disponível`);
         }
+        console.log('result: ', result);
         await this.mobileDeviceService.sendOneNotification({
             body: `Sua requisição para ${result.specialty} foi aceita com sucesso`,
             mobileDeviceId: result.patient.mobileDeviceId,
