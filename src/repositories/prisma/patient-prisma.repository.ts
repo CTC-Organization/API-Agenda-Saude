@@ -13,6 +13,7 @@ import { UpdatePatientDto } from '../../dto/update-patient.dto';
 import { UserRole } from '@prisma/postgres-client';
 import { UploadService } from '@/services/upload.service';
 import { UploadType } from '@prisma/postgres-client';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class PatientPrismaRepository extends UserPrismaRepository implements PatientRepository {
@@ -138,8 +139,17 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
         updatePatientDto: UpdatePatientDto,
         file?: Express.Multer.File,
     ): Promise<Patient | null> {
-        const { email, password, name, phoneNumber, birthDate, susNumber, avatar } =
-            updatePatientDto;
+        const {
+            email,
+            password,
+            name,
+            phoneNumber,
+            birthDate,
+            susNumber,
+            avatar,
+            confirmPassword,
+        } = updatePatientDto;
+
         const userData: any = {
             email,
             password,
@@ -147,9 +157,35 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
             phoneNumber,
         };
         try {
-            const patient = await this.findPatientById(id);
+            const patientQuery = await this.prisma.patient.findFirst({
+                where: {
+                    id,
+                },
+                include: {
+                    user: true,
+                },
+            });
+            const userId = patientQuery.userId;
+            const oldPassword = patientQuery.user.password;
+            if (!!patientQuery?.user) {
+                delete patientQuery.user.password;
+                delete patientQuery.user.id;
+            }
+            const patient = { id, ...patientQuery.user, userId };
 
             if (!patient) throw new BadRequestException('Paciente não encontrado');
+
+            if (updatePatientDto?.password) {
+                if (updatePatientDto?.confirmPassword) {
+                    const isMatch = await argon2.verify(oldPassword, confirmPassword);
+                    if (!isMatch) throw new BadRequestException('Senha de confirmação inválida');
+                    // se passar por isso a senha será atualizada logo abaixo
+                } else {
+                    throw new BadRequestException('Confirmação de senha não preenchida');
+                }
+            } else {
+                throw new BadRequestException('Senha de confirmação inválida');
+            }
 
             if (!!avatar) {
                 const deletedAvatar = await this.uploadService.deleteUpload(avatar);

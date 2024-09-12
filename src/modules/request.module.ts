@@ -8,6 +8,7 @@ import { PatientModule } from './patient.module';
 import { RequestRepository } from '@/repositories/request.repository';
 import { AttachmentModule } from './attachment.module';
 import { AuthModule } from './auth.module';
+import { MobileDeviceModule } from './mobile-device.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { AuthModule } from './auth.module';
         forwardRef(() => AttachmentModule),
         forwardRef(() => PatientModule),
         ServiceTokenModule,
+        MobileDeviceModule,
     ],
     controllers: [RequestController],
     providers: [

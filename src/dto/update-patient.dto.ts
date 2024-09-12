@@ -7,8 +7,11 @@ export class UpdatePatientDto {
 
     @IsOptional()
     @IsString()
-    @IsNotEmpty()
     password: string;
+
+    @IsOptional()
+    @IsString()
+    confirmPassword: string;
 
     @IsOptional()
     @IsString()

@@ -55,13 +55,26 @@ model User {
   @@map("users")
 }
 
+model MobileDevice {
+  id         String    @id @default(uuid())
+  patients   Patient[]
+  expoToken  String    @map("expo_token")
+  deviceType String?   @map("device_type") // android, ios
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  @@map("mobile_devices")
+}
+
 model Patient {
-  id            String         @id @default(uuid())
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String         @map("user_id")
-  susNumber     String         @unique @map("sus_number")
-  requests      Request[]
-  serviceTokens ServiceToken[]
+  id             String         @id @default(uuid())
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String         @map("user_id")
+  susNumber      String         @unique @map("sus_number")
+  requests       Request[]
+  serviceTokens  ServiceToken[]
+  mobileDevice   MobileDevice?  @relation(fields: [mobileDeviceId], references: [id], onDelete: Cascade)
+  mobileDeviceId String?        @map("mobile_device_id")
 
   @@map("patients")
 }

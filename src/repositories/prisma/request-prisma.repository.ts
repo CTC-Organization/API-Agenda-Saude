@@ -16,6 +16,7 @@ import { ServiceTokenPrismaRepository } from './service-token-prisma.repository'
 import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';
 import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
 import { AcceptRequestDto } from '@/dto/accept-request.dto';
+import { MobileDeviceService } from '@/services/mobile-device.service';
 
 @Injectable()
 export class RequestPrismaRepository implements RequestRepository {
@@ -24,6 +25,7 @@ export class RequestPrismaRepository implements RequestRepository {
         @Inject(forwardRef(() => AttachmentPrismaRepository))
         private attachmentPrismaRepository: AttachmentPrismaRepository,
         private serviceTokenPrismaRepository: ServiceTokenPrismaRepository,
+        private mobileDeviceService: MobileDeviceService,
     ) {}
 
     async createRequestWithoutServiceToken(
@@ -212,12 +214,20 @@ export class RequestPrismaRepository implements RequestRepository {
             where: {
                 id: requestId,
             },
+            include: {
+                patient: true,
+            },
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
         if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
             throw new BadRequestException(`A requisição não está mais disponível`);
         }
-
+        await this.mobileDeviceService.sendOneNotification({
+            body: `Sua requisição para ${result.specialty} foi aceita com sucesso`,
+            mobileDeviceId: result.patient.mobileDeviceId,
+            data: { withSome: 'Clique para ver mais informações' },
+            sound: 'default',
+        });
         return await this.prisma.request.update({
             where: {
                 id: requestId,
@@ -284,7 +294,7 @@ export class RequestPrismaRepository implements RequestRepository {
                     include: {
                         user: true, // Inclui os dados do usuário associados ao paciente
                     },
-                }
+                },
             },
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 4');

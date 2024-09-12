@@ -15,6 +15,7 @@ import { UsfModule } from './usf.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { EnvConfigService } from '@/services/env-config.service';
 import { UploadModule } from './upload.module';
+import { MobileDeviceModule } from './mobile-device.module';
 
 @Module({
     imports: [
@@ -36,6 +37,7 @@ import { UploadModule } from './upload.module';
         UploadModule,
         HealthDistrictModule,
         UsfModule,
+        MobileDeviceModule,
     ],
     controllers: [],
     providers: [
