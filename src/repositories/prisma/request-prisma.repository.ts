@@ -15,7 +15,6 @@ import { AttachmentPrismaRepository } from './attachment-prisma.repository';
 import { ServiceTokenPrismaRepository } from './service-token-prisma.repository';
 import { formatDateToBrazilian, isBeforeFiveBusinessDays } from '@/utils/dates';
 import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
-import { FilesInterceptor } from '@nestjs/platform-express';
 import { AcceptRequestDto } from '@/dto/accept-request.dto';
 
 @Injectable()
@@ -60,12 +59,12 @@ export class RequestPrismaRepository implements RequestRepository {
     }
 
     async createRequest(
-        { date, patientId, serviceTokenId }: CreateRequestDto,
+        {  patientId, serviceTokenId,specialty }: CreateRequestDto,
         files?: Array<Express.Multer.File>,
     ) {
         const request = await this.prisma.request.create({
             data: {
-                date,
+                specialty,
                 patientId,
                 serviceTokenId,
                 status: RequestStatus.PENDING,
@@ -151,11 +150,16 @@ export class RequestPrismaRepository implements RequestRepository {
             where: {
                 id: requestId,
             },
+            include: {
+                attachments: true,
+            },
         });
-        if (!result)
-            throw new NotFoundException('Nenhuma ficha de atendimento em andamento foi encontrada');
-        const isAllowedToCancelBody = isBeforeFiveBusinessDays(new Date(result.date));
-        if (!isAllowedToCancelBody.isBeforeFiveBusinessDays) {
+        if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
+        const isAllowedToCancelBody = isBeforeFiveBusinessDays(new Date(result?.date));
+        if (
+            !isAllowedToCancelBody.isBeforeFiveBusinessDays &&
+            (result.status === RequestStatus.CONFIRMED || result.status === RequestStatus.ACCEPTED)
+        ) {
             throw new BadRequestException(
                 `Não foi possível cancelar a requisição a menos de 5 dias úteis.
                 Limite de cancelamento: ${formatDateToBrazilian(
@@ -163,16 +167,35 @@ export class RequestPrismaRepository implements RequestRepository {
                 )}`,
             );
         }
-        if (result.status !== RequestStatus.CONFIRMED && result.status !== RequestStatus.PENDING) {
+        if (
+            result.status === RequestStatus.CANCELLED ||
+            result.status === RequestStatus.EXPIRED ||
+            result.status === RequestStatus.COMPLETED
+        ) {
             throw new BadRequestException(`A requisição não está disponível para cancelamento`);
         }
 
-        return await this.prisma.request.update({
+        if (result.status === RequestStatus.ACCEPTED) {
+            if (result.attachments?.length > 0) {
+                await this.attachmentPrismaRepository.deleteAttachmentsByRequestId(requestId);
+            }
+
+            return await this.prisma.request.update({
+                where: {
+                    id: requestId,
+                },
+                data: {
+                    status: RequestStatus.CANCELLED,
+                },
+            });
+        }
+        if (result.attachments?.length > 0) {
+            await this.attachmentPrismaRepository.deleteAttachmentsByRequestId(requestId);
+        }
+
+        return await this.prisma.request.delete({
             where: {
                 id: requestId,
-            },
-            data: {
-                status: RequestStatus.CANCELLED,
             },
         });
     }
@@ -236,7 +259,7 @@ export class RequestPrismaRepository implements RequestRepository {
             },
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
-        if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
+        if (result.status !== RequestStatus.ACCEPTED) {
             throw new BadRequestException(`A requisição não está disponível para confirmação`);
         }
         return await this.prisma.request.update({
@@ -257,13 +280,19 @@ export class RequestPrismaRepository implements RequestRepository {
             include: {
                 serviceToken: true,
                 attachments: true,
+                patient: {
+                    include: {
+                        user: true, // Inclui os dados do usuário associados ao paciente
+                    },
+                }
             },
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 4');
         if (
             (result.status === RequestStatus.PENDING ||
                 result.status === RequestStatus.CONFIRMED) &&
-            new Date(result.date) < new Date()
+            result?.date &&
+            new Date(result?.date) < new Date()
         ) {
             await this.prisma.request.update({
                 where: {
@@ -295,7 +324,8 @@ export class RequestPrismaRepository implements RequestRepository {
                     (r) =>
                         (r.status === RequestStatus.PENDING ||
                             r.status === RequestStatus.CONFIRMED) &&
-                        new Date(r.date) < now,
+                        r?.date &&
+                        new Date(r?.date) < now,
                 ) // expirationDate === agora então não filtra
                 .map((x) => x.id);
             if (filteredRequestsIds?.length) {

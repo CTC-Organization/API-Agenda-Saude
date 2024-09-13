@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
 
 export class CreateRequestWithoutServiceTokenDto {
     @IsUUID()
@@ -6,5 +6,6 @@ export class CreateRequestWithoutServiceTokenDto {
     patientId: string;
 
     @IsNotEmpty()
+    @IsString()
     specialty: string;
 }

@@ -25,4 +25,8 @@ export class UpdatePatientDto {
     @IsOptional()
     @IsString()
     susNumber: string;
+
+    @IsOptional()
+    @IsString()
+    avatar: string;
 }

@@ -14,6 +14,7 @@ export class UserInterceptor implements NestInterceptor {
                 const token = (authorization ?? '').split(' ')[1];
                 const user = await this.authService.checkToken(token);
                 req.user = user;
+                req.body = req.body;
             } catch (e) {
                 // Handle token verification error if necessary
             }

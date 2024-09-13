@@ -1,21 +1,33 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+    BadRequestException,
+    forwardRef,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { UserPrismaRepository } from './user-prisma.repository';
 import { PrismaService } from '../../services/prisma.service';
 import { PatientRepository } from '../patient.repository';
 import { CreatePatient, Patient } from '../../interfaces/patient';
 import { UpdatePatientDto } from '../../dto/update-patient.dto';
 import { UserRole } from '@prisma/postgres-client';
+import { UploadService } from '@/services/upload.service';
+import { UploadType } from '@prisma/postgres-client';
 
 @Injectable()
 export class PatientPrismaRepository extends UserPrismaRepository implements PatientRepository {
-    constructor(public prisma: PrismaService) {
+    constructor(
+        public prisma: PrismaService,
+
+        @Inject(forwardRef(() => UploadService))
+        public uploadService: UploadService,
+    ) {
         super(prisma);
     }
 
     async createPatient({
         email,
         password,
-        cpf,
         name,
         phoneNumber,
         role,
@@ -104,7 +116,7 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
     //     }
     //     return result;
     // }
-    async findPatientById(id: string): Promise<Patient | null> {
+    async findPatientById(id: string): Promise<any> {
         const result = await this.prisma.patient.findFirst({
             where: {
                 id,
@@ -113,51 +125,94 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 user: true,
             },
         });
+        const userId = result.userId;
         if (!!result?.user) {
             delete result.user.password;
             delete result.user.id;
         }
-        return { id, ...result.user };
+        return { id, ...result.user, userId };
     }
-    async updatePatient(id: string, updatePatientDto: UpdatePatientDto): Promise<Patient | null> {
-        const { email, password, name, phoneNumber, birthDate, susNumber } = updatePatientDto;
-
+    async updatePatient(
+        id: string,
+        updatePatientDto: UpdatePatientDto,
+        file?: Express.Multer.File,
+    ): Promise<Patient | null> {
+        const { email, password, name, phoneNumber, birthDate, susNumber, avatar } =
+            updatePatientDto;
         const userData: any = {
             email,
             password,
             name,
             phoneNumber,
         };
+        try {
+            const patient = await this.findPatientById(id);
 
-        if (!!birthDate) {
-            userData.birthDate = new Date(birthDate);
-        }
-        return await this.prisma.$transaction(async (prisma) => {
-            const patient = await prisma.patient.findUnique({
-                where: {
-                    id,
-                },
-            });
             if (!patient) throw new BadRequestException('Paciente não encontrado');
-            const result = await prisma.user.update({
-                where: {
-                    id: patient.userId,
-                },
-                data: userData,
-            });
-            await prisma.patient.update({
-                where: {
-                    id,
-                },
-                data: {
-                    susNumber,
-                },
-            });
 
-            result.id = id;
-            delete result.password;
+            if (!!avatar) {
+                const deletedAvatar = await this.uploadService.deleteUpload(avatar);
+                if (!!deletedAvatar) {
+                    await this.prisma.user.update({
+                        where: {
+                            id: patient.userId,
+                        },
+                        data: {
+                            avatar: null,
+                        },
+                    });
+                }
+            }
 
-            return { ...result, susNUmber: susNumber };
-        });
+            if (!!file && !!patient) {
+                try {
+                    const upload = await this.uploadService.createUpload({
+                        file: file,
+                        folder: 'avatars',
+                        uploadType: UploadType.AVATAR,
+                        referenceId: patient.userId,
+                    });
+                    if (!!upload) {
+                        await this.prisma.user.update({
+                            where: {
+                                id: patient.userId,
+                            },
+                            data: {
+                                avatar: upload.id,
+                            },
+                        });
+                    }
+                } catch (err) {
+                    throw new Error('erro 2: ' + err);
+                }
+            }
+
+            if (!!birthDate) {
+                userData.birthDate = new Date(birthDate);
+            }
+            return await this.prisma.$transaction(async (prisma) => {
+                const result = await prisma.user.update({
+                    where: {
+                        id: patient.userId,
+                    },
+                    data: userData,
+                });
+                await prisma.patient.update({
+                    where: {
+                        id,
+                    },
+                    data: {
+                        susNumber,
+                    },
+                });
+
+                result.id = id;
+                delete result.password;
+
+                return { ...result, susNUmber: susNumber };
+            });
+        } catch (err) {
+            throw new Error('erro 1: ' + err);
+        }
     }
 }

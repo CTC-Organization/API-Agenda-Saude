@@ -10,7 +10,12 @@ import { AttachmentModule } from './attachment.module';
 import { AuthModule } from './auth.module';
 
 @Module({
-    imports: [AuthModule, forwardRef(() => AttachmentModule), PatientModule, ServiceTokenModule],
+    imports: [
+        forwardRef(() => AuthModule),
+        forwardRef(() => AttachmentModule),
+        forwardRef(() => PatientModule),
+        ServiceTokenModule,
+    ],
     controllers: [RequestController],
     providers: [
         PrismaService,

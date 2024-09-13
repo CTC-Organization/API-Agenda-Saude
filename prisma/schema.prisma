@@ -9,6 +9,10 @@ generator client {
   output        = "../node_modules/@prisma/postgres-client"
 }
 
+enum UploadType {
+  AVATAR
+}
+
 enum AttachmentType {
   REQUEST_ATTACHMENT
 }
@@ -35,6 +39,7 @@ model User {
   role         UserRole      @default(PATIENT)
   email        String        @unique
   name         String?
+  avatar       String?
   birthDate    DateTime?     @map("birth_date")
   phoneNumber  String?       @map("phone_number")
   createdAt    DateTime      @default(now()) @map("created_at")
@@ -47,6 +52,7 @@ model User {
   resetPasswordExpires DateTime?   
   //latitude     // O admin já possui acesso ao posto do usuário
   //longitude    // O admin já possui acesso ao posto do usuário
+  Uploads      Upload[]
 
   @@map("users")
 }
@@ -99,13 +105,13 @@ model ServiceToken {
 }
 
 enum RequestStatus {
-  CANCELLED
   COMPLETED
   EXPIRED
   PENDING
   DENIED
   ACCEPTED
   CONFIRMED
+  CANCELLED
 }
 
 model Request {
@@ -141,6 +147,20 @@ model Attachment {
   folder      String
 
   @@map("attachments")
+}
+
+model Upload {
+  id          String     @id @default(uuid())
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String     @map("user_id")
+  description String?
+  type        UploadType
+  name        String
+  url         String
+  createdAt   DateTime   @default(now()) @map("created_at")
+  folder      String
+
+  @@map("uploads")
 }
 
 // npx prisma migrate dev --name nome da nova migração para adicionar nova alteração
