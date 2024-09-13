@@ -12,7 +12,6 @@ export class UserPrismaRepository implements UserRepository {
     async createUser({
         email,
         password,
-     
         name,
         phoneNumber,
         role,
@@ -22,7 +21,6 @@ export class UserPrismaRepository implements UserRepository {
             data: {
                 email,
                 password,
-                // cpf,
                 name,
                 phoneNumber,
                 role,
@@ -98,7 +96,11 @@ export class UserPrismaRepository implements UserRepository {
     }
 
     // Novo método para atualizar o usuário com o token de recuperação de senha
-    async updateUserWithResetToken(email: string, resetPasswordToken: string, resetPasswordExpires: Date): Promise<User | null> {
+    async updateUserWithResetToken(
+        email: string,
+        resetPasswordToken: string,
+        resetPasswordExpires: Date,
+    ): Promise<User | null> {
         const user = await this.prisma.user.update({
             where: { email },
             data: {
