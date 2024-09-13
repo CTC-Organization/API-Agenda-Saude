@@ -196,14 +196,6 @@ export class RequestPrismaRepository implements RequestRepository {
             await this.attachmentPrismaRepository.deleteAttachmentsByRequestId(requestId);
         }
 
-        await this.mobileDeviceService.sendOneNotification({
-            title: `Sua requisição para ${result.specialty} foi negade - Ver mais detalhes`,
-            body: `Requisição negada: ${result.observation}`,
-            mobileDeviceId: result.patient.mobileDeviceId,
-            data: { withSome: 'Clique para ver mais informações' },
-            sound: 'default',
-        });
-
         return await this.prisma.request.delete({
             where: {
                 id: requestId,
@@ -256,6 +248,9 @@ export class RequestPrismaRepository implements RequestRepository {
             where: {
                 id: requestId,
             },
+            include: {
+                patient: true,
+            },
         });
         if (!result) throw new NotFoundException('Nenhuma requisição foi encontrada');
         if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
@@ -269,6 +264,14 @@ export class RequestPrismaRepository implements RequestRepository {
                 status: RequestStatus.DENIED,
                 observation,
             },
+        });
+
+        await this.mobileDeviceService.sendOneNotification({
+            title: `Sua requisição para ${result.specialty} foi negade - Ver mais detalhes`,
+            body: `Requisição negada: ${result.observation}`,
+            mobileDeviceId: result.patient.mobileDeviceId,
+            data: { withSome: 'Clique para ver mais informações' },
+            sound: 'default',
         });
         return { observation };
     }
