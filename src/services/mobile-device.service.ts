@@ -25,7 +25,7 @@ export class MobileDeviceService {
                     // se encontrou um dispositivo registrado
                     if (foundDevice.expoToken !== expoToken) {
                         // atualiza o celular no banco
-                        const updatedDevice = await this.prisma.mobileDevice.update({
+                        return await this.prisma.mobileDevice.update({
                             where: {
                                 id: foundDevice.id,
                             },
@@ -73,11 +73,13 @@ export class MobileDeviceService {
     }
 
     async sendOneNotification({
+        title,
         body,
         sound,
         data,
         mobileDeviceId,
     }: {
+        title: string;
         body: string | 'uma notificação';
         sound: string | 'default';
         mobileDeviceId: string;
@@ -105,6 +107,7 @@ export class MobileDeviceService {
             }
             // Construct a message (see https://docs.expo.io/push-notifications/sending-notifications/)
             messages.push({
+                title,
                 to: pushToken,
                 sound,
                 body,
