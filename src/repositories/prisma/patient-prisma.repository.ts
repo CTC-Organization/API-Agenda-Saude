@@ -27,7 +27,6 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
                 data: {
                     email,
                     password,
-                    cpf,
                     name,
                     phoneNumber,
                     role,
@@ -42,7 +41,6 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
             });
             return {
                 id: newPatient.id,
-                cpf: newUser.cpf,
                 email: newUser.email || '',
                 name: newUser.name || '',
                 phoneNumber: newUser.phoneNumber || '',
@@ -72,24 +70,40 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
         return result;
     }
 
-    async findPatientByCpf(cpf: string): Promise<Patient | null> {
-        const result = await this.prisma.user.findFirst({
+    async findPatientBySusNumber(susNumber: string): Promise<any> {
+        const result = await this.prisma.patient.findFirst({
             where: {
-                cpf,
+                susNumber,
             },
             include: {
-                patients: true,
+                user: true,
             },
         });
-        if (result?.patients) {
-            result.id = result.patients[0].id;
-            delete result.patients;
-        }
+
         if (!!result) {
-            delete result.password;
+            delete result.user.password;
         }
         return result;
     }
+
+    // async findPatientByCpf(cpf: string): Promise<Patient | null> {
+    //     const result = await this.prisma.user.findFirst({
+    //         where: {
+    //             cpf,
+    //         },
+    //         include: {
+    //             patients: true,
+    //         },
+    //     });
+    //     if (result?.patients) {
+    //         result.id = result.patients[0].id;
+    //         delete result.patients;
+    //     }
+    //     if (!!result) {
+    //         delete result.password;
+    //     }
+    //     return result;
+    // }
     async findPatientById(id: string): Promise<Patient | null> {
         const result = await this.prisma.patient.findFirst({
             where: {

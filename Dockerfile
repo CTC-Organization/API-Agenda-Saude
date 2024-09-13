@@ -12,6 +12,8 @@ RUN npm install -g pnpm@8.6.12
 
 RUN pnpm install
 
+RUN apt-get update -y && apt-get install -y openssl
+
 RUN npx prisma generate
 
 RUN apt-get update -y && apt-get install -y openssl

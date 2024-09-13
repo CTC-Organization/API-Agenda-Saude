@@ -17,9 +17,9 @@ export class UserService {
     async createUser({ email, password, cpf, name, phoneNumber, role, birthDate }: CreateUserDto) {
         if (await this.userRepository.findUserByEmail(email)) {
             throw new BadRequestException('Email indisponível');
-        } else if (await this.userRepository.findUserByCpf(cpf)) {
-            throw new BadRequestException('CPF indisponível');
-        }
+        } // else if (await this.userRepository.findUserByCpf(cpf)) {
+        //     throw new BadRequestException('CPF indisponível');
+        // }
 
         const passwordHashed = await argon2.hash(password);
         const user = await this.userRepository.createUser({
@@ -43,12 +43,12 @@ export class UserService {
         excludeFieldsInEntity(user, 'password');
         return user;
     }
-    async getUserByCpf(cpf: string) {
-        const user = await this.userRepository.findUserByCpf(cpf);
-        if (!user) throw new NotFoundException('Usuário não encontrado');
-        excludeFieldsInEntity(user, 'password');
-        return user;
-    }
+    // async getUserByCpf(cpf: string) {
+    //     const user = await this.userRepository.findUserByCpf(cpf);
+    //     if (!user) throw new NotFoundException('Usuário não encontrado');
+    //     excludeFieldsInEntity(user, 'password');
+    //     return user;
+    // }
 
     async requestPasswordReset(email: string) {
         const user = await this.userRepository.findUserByEmail(email);

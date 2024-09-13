@@ -6,7 +6,7 @@ import { CreatePatientDto } from '../dto/create-patient.dto';
 const mockPatientRepository = {
     createPatient: jest.fn(),
     findPatientByEmail: jest.fn(),
-    findPatientByCpf: jest.fn(),
+    // findPatientByCpf: jest.fn(),
 };
 
 let patientRepository: PatientRepository;
@@ -55,11 +55,11 @@ describe('PatientService', () => {
         expect(patientRepository.createPatient).not.toHaveBeenCalled();
     });
 
-    it('should not create a patient if CPF is already in use', async () => {
-        mockPatientRepository.findPatientByEmail.mockResolvedValue(undefined);
-        mockPatientRepository.findPatientByCpf.mockResolvedValue(data.cpf);
-        await expect(sut.createPatient(data)).rejects.toThrow('CPF indisponível');
-        expect(patientRepository.findPatientByCpf).toHaveBeenCalledWith(data.cpf);
-        expect(patientRepository.createPatient).not.toHaveBeenCalled();
-    });
+    // it('should not create a patient if CPF is already in use', async () => {
+    //     mockPatientRepository.findPatientByEmail.mockResolvedValue(undefined);
+    //     mockPatientRepository.findPatientByCpf.mockResolvedValue(data.cpf);
+    //     await expect(sut.createPatient(data)).rejects.toThrow('CPF indisponível');
+    //     expect(patientRepository.findPatientByCpf).toHaveBeenCalledWith(data.cpf);
+    //     expect(patientRepository.createPatient).not.toHaveBeenCalled();
+    // });
 });

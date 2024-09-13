@@ -11,27 +11,15 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:3002',
-        'http://localhost:8000',
-        'http://localhost:8001',
-        'http://localhost:8002',
         'https://api-agenda-saude-production.up.railway.app',
+        'https://9000-idx-agenda-saude-admin-1725118421514.cluster-kc2r6y3mtba5mswcmol45orivs.cloudworkstations.dev',
     ];
 
     const app = await NestFactory.create(AppModule, {
         cors: {
             methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-            origin: function (origin, callback) {
-                if (!origin) {
-                    callback(null, true);
-                    return;
-                }
-                if (whitelist.includes(origin)) {
-                    callback(null, true);
-                } else {
-                    logger.warn(`Origin: ${origin} not allowed by CORS`);
-                    callback(new ForbiddenException('Not allowed by CORS'), false);
-                }
-            },
+            origin: '*',
+            allowedHeaders: ['Content-Type', 'Authorization'],
         },
     });
 

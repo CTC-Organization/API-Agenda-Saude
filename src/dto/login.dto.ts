@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class LoginInputDto {
     @IsString()
     @ApiProperty({
         example: '11111111111',
-        description:
-            'CPF do paciente - usado para login. Não precisa estar na formatação exata de CPF por enquanto',
+        description: 'email do paciente, employee ou admin - usado para login.',
     })
-    cpf: string;
+    email: string;
+
     @IsString()
     @ApiProperty({
         example: '1234',

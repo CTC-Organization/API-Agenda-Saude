@@ -12,7 +12,7 @@ export class UserPrismaRepository implements UserRepository {
     async createUser({
         email,
         password,
-        cpf,
+     
         name,
         phoneNumber,
         role,
@@ -22,7 +22,7 @@ export class UserPrismaRepository implements UserRepository {
             data: {
                 email,
                 password,
-                cpf,
+                // cpf,
                 name,
                 phoneNumber,
                 role,
@@ -46,17 +46,16 @@ export class UserPrismaRepository implements UserRepository {
         return user;
     }
 
-    async findUserByCpf(cpf: string): Promise<User | null> {
-        const user = await this.prisma.user.findFirst({
-            where: { cpf },
-        });
-
-        if (!user) throw new NotFoundException('Usuário não encontrado');
-        delete user.password;
-
-        return user;
-    }
-
+    // async findUserByCpf(cpf: string): Promise<User | null> {
+    //     const user = await this.prisma.user.findFirst({
+    //         where: {
+    //             cpf,
+    //         },
+    //     });
+    //     if (!user) throw new NotFoundException('Usuário não encontrado');
+    //     delete user.password;
+    //     return user;
+    // }
     async findUserById(id: string): Promise<User> {
         const user = await this.prisma.user.findUnique({
             where: { id },

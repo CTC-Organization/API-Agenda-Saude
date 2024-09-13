@@ -85,6 +85,33 @@ export class ServiceTokenPrismaRepository implements ServiceTokenRepository {
             throw err;
         }
     }
+
+    async findValidServiceTokenByPatientId(id: string): Promise<any> {
+        const result = await this.prisma.serviceToken.findFirst({
+            where: {
+                patientId: id,
+                status: ServiceStatus.PENDING,
+            },
+            include: {
+                requests: true,
+            },
+        });
+        if (!result) throw new NotFoundException('Ficha de atendimento não encontrada');
+        if (
+            result.status === ServiceStatus.PENDING &&
+            new Date(result.expirationDate) < new Date()
+        ) {
+            return await this.prisma.serviceToken.update({
+                where: {
+                    id: result.id,
+                },
+                data: {
+                    status: ServiceStatus.EXPIRED,
+                },
+            });
+        }
+        return result;
+    }
     async findServiceTokenById(id: string): Promise<any> {
         const result = await this.prisma.serviceToken.findFirst({
             where: {

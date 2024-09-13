@@ -29,22 +29,24 @@ model RefreshToken {
 }
 
 model User {
-  id                  String        @id @default(uuid())
-  cpf                 String        @unique
-  password            String
-  role                UserRole      @default(PATIENT)
-  email               String?       @unique
-  name                String?
-  birthDate           DateTime?     @map("birth_date")
-  phoneNumber         String?       @map("phone_number")
-  createdAt           DateTime      @default(now()) @map("created_at")
-  updatedAt           DateTime      @updatedAt @map("updated_at")
+  id           String        @id @default(uuid())
+  // cpf          String        @unique
+  password     String
+  role         UserRole      @default(PATIENT)
+  email        String        @unique
+  name         String?
+  birthDate    DateTime?     @map("birth_date")
+  phoneNumber  String?       @map("phone_number")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  patients     Patient[] // "Relacionamentos do prisma"
+  admins       Admin[] // "Relacionamentos do prisma"
+  employees    Employee[] // "Relacionamentos do prisma"
+  refreshToken RefreshToken?
   resetPasswordToken  String?       // Campo para o token de recuperação
-  resetPasswordExpires DateTime?    // Campo para a expiração do token
-  patients            Patient[]     // "Relacionamentos do prisma"
-  admins              Admin[]       // "Relacionamentos do prisma"
-  employees           Employee[]    // "Relacionamentos do prisma"
-  refreshToken        RefreshToken?
+  resetPasswordExpires DateTime?   
+  //latitude     // O admin já possui acesso ao posto do usuário
+  //longitude    // O admin já possui acesso ao posto do usuário
 
   @@map("users")
 }
@@ -53,7 +55,7 @@ model Patient {
   id            String         @id @default(uuid())
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String         @map("user_id")
-  susNumber     String?        @map("sus_number")
+  susNumber     String         @unique @map("sus_number")
   requests      Request[]
   serviceTokens ServiceToken[]
 
@@ -101,6 +103,9 @@ enum RequestStatus {
   COMPLETED
   EXPIRED
   PENDING
+  DENIED
+  ACCEPTED
+  CONFIRMED
 }
 
 model Request {
@@ -110,10 +115,16 @@ model Request {
   serviceToken   ServiceToken  @relation(fields: [serviceTokenId], references: [id])
   serviceTokenId String        @map("service_token_id")
   status         RequestStatus @default(PENDING)
-  date           DateTime
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
   attachments    Attachment[]
+
+  date        DateTime?
+  latitude    String?
+  longitude   String?
+  doctorName  String?   @map("doctor_name")
+  specialty   String?
+  observation String?
 
   @@map("requests")
 }

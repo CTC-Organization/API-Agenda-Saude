@@ -1,10 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateRequestDto } from '@/dto/create-request.dto';
+import { CreateRequestWithoutServiceTokenDto } from '@/dto/create-request-without-service-token.dto';
 import { RequestRepository } from '@/repositories/request.repository';
 import { ServiceTokenRepository } from '@/repositories/service-token.repository';
 import { PatientRepository } from '@/repositories/patient.repository';
-import { UpdateRequestDto } from '@/dto/update-request.dto';
 import { ServiceStatus } from '@prisma/postgres-client';
+import { ResendRequestDto } from '@/dto/resend-request.dto';
+import { AcceptRequestDto } from '@/dto/accept-request.dto';
 
 @Injectable()
 export class RequestService {
@@ -14,9 +16,29 @@ export class RequestService {
         private patientRepository: PatientRepository,
     ) {}
 
+    async createRequestWithoutServiceToken(
+        { patientId, specialty }: CreateRequestWithoutServiceTokenDto,
+        files?: Array<Express.Multer.File>,
+    ) {
+        try {
+            if (!(await this.patientRepository.findPatientById(patientId))) {
+                throw new NotFoundException('Paciente não encontrado');
+            }
+            return await this.requestRepository.createRequestWithoutServiceToken(
+                {
+                    patientId,
+                    specialty,
+                },
+                files,
+            );
+        } catch (err) {
+            throw err;
+        }
+    }
+
     async createRequest(
-        files: Array<Express.Multer.File>,
         { date, serviceTokenId, patientId }: CreateRequestDto,
+        files?: Array<Express.Multer.File>,
     ) {
         try {
             const serviceToken = await this.serviceTokenRepository.findServiceTokenById(
@@ -30,23 +52,29 @@ export class RequestService {
             } else if (!(await this.patientRepository.findPatientById(patientId))) {
                 throw new NotFoundException('Paciente não encontrada');
             }
-            return await this.requestRepository.createRequest(files, {
-                patientId,
-                date,
-                serviceTokenId,
-            });
+            return await this.requestRepository.createRequest(
+                {
+                    patientId,
+                    date,
+                    serviceTokenId,
+                },
+                files,
+            );
         } catch (err) {
             throw err;
         }
     }
-    async updateRequest(updateRequestDto: UpdateRequestDto) {
+    async listAllRequests() {
+        return await this.requestRepository.listAllRequests();
+    }
+    async resendRequest(resendRequestDto: ResendRequestDto, files?: Array<Express.Multer.File>) {
         try {
-            if (!(await this.patientRepository.findPatientById(updateRequestDto.patientId))) {
+            if (!(await this.patientRepository.findPatientById(resendRequestDto.patientId))) {
                 throw new NotFoundException('Paciente não encontrado para essa requisição');
             }
-            const result = await this.requestRepository.updateRequest(updateRequestDto);
+            const result = await this.requestRepository.resendRequest(resendRequestDto, files);
             if (!result) {
-                throw new NotFoundException('Requisição não encontrada para essa atualização');
+                throw new NotFoundException('O reenvio falhou');
             }
             return result;
         } catch (err) {
@@ -77,6 +105,27 @@ export class RequestService {
     }
     async completeRequest(id: string) {
         const result = await this.requestRepository.completeRequest(id);
+        if (!result) {
+            throw new NotFoundException('Requisição não encontrada');
+        }
+        return result;
+    }
+    async confirmRequest(id: string) {
+        const result = await this.requestRepository.confirmRequest(id);
+        if (!result) {
+            throw new NotFoundException('Requisição não encontrada');
+        }
+        return result;
+    }
+    async denyRequest(id: string, observation: string) {
+        const result = await this.requestRepository.denyRequest(id, observation);
+        if (!result) {
+            throw new NotFoundException('Requisição não encontrada');
+        }
+        return result;
+    }
+    async acceptRequest(requestId: string, acceptRequestDto: AcceptRequestDto) {
+        const result = await this.requestRepository.acceptRequest(requestId, acceptRequestDto);
         if (!result) {
             throw new NotFoundException('Requisição não encontrada');
         }
