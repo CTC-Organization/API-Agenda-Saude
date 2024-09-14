@@ -258,15 +258,6 @@ export class RequestPrismaRepository implements RequestRepository {
         if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
             throw new BadRequestException(`A requisição não está disponível para negação`);
         }
-        await this.prisma.request.update({
-            where: {
-                id: requestId,
-            },
-            data: {
-                status: RequestStatus.DENIED,
-                observation,
-            },
-        });
 
         await this.mobileDeviceService.sendOneNotification({
             title: `Sua requisição para ${result.specialty} foi negada`,
@@ -275,7 +266,15 @@ export class RequestPrismaRepository implements RequestRepository {
             data: { withSome: 'Clique para ver mais informações' },
             sound: 'default',
         });
-        return { observation };
+        return await this.prisma.request.update({
+            where: {
+                id: requestId,
+            },
+            data: {
+                status: RequestStatus.DENIED,
+                observation,
+            },
+        });
     }
     async confirmRequest(requestId: string): Promise<any> {
         const result = await this.prisma.request.findUnique({
