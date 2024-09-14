@@ -33,14 +33,10 @@ export class MobileDeviceService {
                                 expoToken,
                             },
                         });
-                    } else {
-                        return foundDevice;
                     }
-                } else {
-                    // supondo que o usuario está com outro celular no momento - troca o celular no banco
-                    // se não achou nenhum dispositivo atualize
-                    return await this.createMobileDevice(patientId, expoToken);
+                    return foundDevice;
                 }
+                return await this.createMobileDevice(patientId, expoToken);
             }
         } catch (err) {
             throw err;
