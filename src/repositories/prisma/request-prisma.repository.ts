@@ -242,6 +242,8 @@ export class RequestPrismaRepository implements RequestRepository {
                 address,
                 longitude,
                 latitude,
+                address,
+                unitName,
                 status: RequestStatus.ACCEPTED,
             },
         });

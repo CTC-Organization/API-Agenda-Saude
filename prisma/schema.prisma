@@ -142,6 +142,8 @@ model Request {
   doctorName  String?   @map("doctor_name")
   specialty   String?
   observation String?
+  unitName    String?   @map("unit_name")
+  address     String?
 
   @@map("requests")
 }
