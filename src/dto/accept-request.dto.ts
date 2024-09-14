@@ -16,4 +16,12 @@ export class AcceptRequestDto {
     @IsNotEmpty()
     @IsString()
     doctorName: string;
+
+    @IsNotEmpty()
+    @IsString()
+    address: string;
+
+    @IsNotEmpty()
+    @IsString()
+    unitName: string;
 }

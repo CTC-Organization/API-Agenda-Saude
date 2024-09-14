@@ -206,7 +206,7 @@ export class RequestPrismaRepository implements RequestRepository {
     // resumo: inserir lat, long, doctorName, date
     async acceptRequest(
         requestId: string,
-        { date, doctorName, longitude, latitude }: AcceptRequestDto,
+        { date, doctorName, longitude, latitude, address, unitName }: AcceptRequestDto,
     ): Promise<any> {
         const result = await this.prisma.request.findUnique({
             where: {
@@ -227,6 +227,8 @@ export class RequestPrismaRepository implements RequestRepository {
                 doctorName,
                 longitude,
                 latitude,
+                address,
+                unitName,
                 status: RequestStatus.ACCEPTED,
             },
         });
@@ -284,7 +286,7 @@ export class RequestPrismaRepository implements RequestRepository {
                     include: {
                         user: true, // Inclui os dados do usuário associados ao paciente
                     },
-                }
+                },
             },
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 4');
