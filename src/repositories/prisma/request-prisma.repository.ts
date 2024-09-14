@@ -224,8 +224,10 @@ export class RequestPrismaRepository implements RequestRepository {
             throw new BadRequestException(`A requisição não está mais disponível`);
         }
         await this.mobileDeviceService.sendOneNotification({
-            title: `Sua requisição para ${result.specialty} foi aceita - Ver mais detalhes`,
-            body: `Requisição para ${result.specialty} foi aceita para ${date.toString()}`,
+            title: `Sua requisição para ${result.specialty} foi aceita`,
+            body: `Ver mais detalhes - Requisição para ${
+                result.specialty
+            } foi aceita para ${formatDateToBrazilian(new Date(date))}`,
             mobileDeviceId: result.patient.mobileDeviceId,
             data: { withSome: 'Clique para ver mais informações' },
             sound: 'default',
@@ -267,8 +269,8 @@ export class RequestPrismaRepository implements RequestRepository {
         });
 
         await this.mobileDeviceService.sendOneNotification({
-            title: `Sua requisição para ${result.specialty} foi negada - Ver mais detalhes`,
-            body: `Requisição negada: ${observation}`,
+            title: `Sua requisição para ${result.specialty} foi negada`,
+            body: `Ver mais detalhes - Requisição negada: ${observation}`,
             mobileDeviceId: result.patient.mobileDeviceId,
             data: { withSome: 'Clique para ver mais informações' },
             sound: 'default',
