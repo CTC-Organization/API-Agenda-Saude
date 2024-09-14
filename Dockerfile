@@ -22,10 +22,8 @@ ENV DATABASE_URL=${DATABASE_URL}
 
 ENV MONGODB_URI=${MONGODB_URI}
 
-RUN npx prisma migrate deploy
-
 RUN pnpm run build
 
 EXPOSE 8080
 
-CMD ["pnpm", "run", "start:prod"]
+CMD ["sh", "-c", "npx prisma migrate deploy && pnpm run start:prod"]
