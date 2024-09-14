@@ -267,8 +267,8 @@ export class RequestPrismaRepository implements RequestRepository {
         });
 
         await this.mobileDeviceService.sendOneNotification({
-            title: `Sua requisição para ${result.specialty} foi negade - Ver mais detalhes`,
-            body: `Requisição negada: ${result.observation}`,
+            title: `Sua requisição para ${result.specialty} foi negada - Ver mais detalhes`,
+            body: `Requisição negada: ${observation}`,
             mobileDeviceId: result.patient.mobileDeviceId,
             data: { withSome: 'Clique para ver mais informações' },
             sound: 'default',
