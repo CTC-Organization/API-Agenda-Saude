@@ -32,7 +32,7 @@ import { ValidateIsUserSelf } from '@/commons/guards/validate-self.guard';
 @Controller('requests')
 @ApiTags('Requisições: requests')
 export class RequestController {
-    constructor(private readonly requestService: RequestService) {}
+    constructor(private readonly requestService: RequestService) { }
 
     @Post('request-without-service-token')
     @UseInterceptors(AnyFilesInterceptor())
@@ -133,9 +133,12 @@ export class RequestController {
         );
     }
 
-    @Get(':id')
+    @Get(':id') // id da request != id do paciente
     @UseGuards(ValidateIsUserSelfOrAdminOrEmployee)
-    async findRequestById(@Param('id') id: string) {
+    async findRequestById(
+        @Req() req: any,
+        @Param('id') id: string,
+        @Body() { patientId }: { patientId: string }) {
         return await this.requestService.findRequestById(id);
     }
     @Get('patient-requests/:id')
