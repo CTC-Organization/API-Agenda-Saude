@@ -209,7 +209,7 @@ export class RequestPrismaRepository implements RequestRepository {
     // resumo: inserir lat, long, doctorName, date
     async acceptRequest(
         requestId: string,
-        { date, doctorName, longitude, latitude }: AcceptRequestDto,
+        { date, doctorName, longitude, latitude, address, unitName }: AcceptRequestDto,
     ): Promise<any> {
         const result = await this.prisma.request.findUnique({
             where: {
@@ -239,6 +239,7 @@ export class RequestPrismaRepository implements RequestRepository {
             data: {
                 date,
                 doctorName,
+                address,
                 longitude,
                 latitude,
                 status: RequestStatus.ACCEPTED,
