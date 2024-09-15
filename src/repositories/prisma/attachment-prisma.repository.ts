@@ -54,11 +54,11 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                     throw new NotFoundException('RequisiçfindRequestByIdão não foi encontrada');
             }
 
-            const fileName = `${randomUUID()}-${file[0].originalname}`;
+            const fileName = `${randomUUID()}-${file.originalname}`;
             const blob = this.bucket.file(`${folder}/${fileName}}`);
             const blobStream = blob.createWriteStream({
                 metadata: {
-                    contentType: file[0].mimetype, // Defina o tipo de conteúdo
+                    contentType: file.mimetype, // Defina o tipo de conteúdo
                 },
             });
             const uploadPromise = new Promise<string>((resolve, reject) => {
@@ -71,7 +71,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
                     reject(err);
                 });
             });
-            blobStream.end(file[0].buffer);
+            blobStream.end(file.buffer);
             const publicUrl = await uploadPromise;
 
             return await this.prisma.attachment.create({

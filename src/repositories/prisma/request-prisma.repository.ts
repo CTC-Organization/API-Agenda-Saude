@@ -61,12 +61,12 @@ export class RequestPrismaRepository implements RequestRepository {
     }
 
     async createRequest(
-        { date, patientId, serviceTokenId }: CreateRequestDto,
+        {  patientId, serviceTokenId,specialty }: CreateRequestDto,
         files?: Array<Express.Multer.File>,
     ) {
         const request = await this.prisma.request.create({
             data: {
-                date,
+                specialty,
                 patientId,
                 serviceTokenId,
                 status: RequestStatus.PENDING,

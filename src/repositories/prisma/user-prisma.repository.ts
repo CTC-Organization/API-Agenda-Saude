@@ -7,12 +7,11 @@ import { CreateUserDto } from '@/dto/create-user.dto';
 
 @Injectable()
 export class UserPrismaRepository implements UserRepository {
-    constructor(public prisma: PrismaService) {}
+    constructor(protected readonly prisma: PrismaService) {}
 
     async createUser({
         email,
         password,
-        cpf,
         name,
         phoneNumber,
         role,
@@ -22,11 +21,10 @@ export class UserPrismaRepository implements UserRepository {
             data: {
                 email,
                 password,
-                // cpf,
                 name,
                 phoneNumber,
                 role,
-                birthDate: new Date(birthDate),
+                birthDate: birthDate ? new Date(birthDate) : undefined,
             },
         });
 
@@ -37,10 +35,9 @@ export class UserPrismaRepository implements UserRepository {
 
     async findUserByEmail(email: string): Promise<User | null> {
         const user = await this.prisma.user.findFirst({
-            where: {
-                email,
-            },
+            where: { email },
         });
+
         if (!user) throw new NotFoundException('Usuário não encontrado');
         delete user.password;
 
@@ -62,11 +59,9 @@ export class UserPrismaRepository implements UserRepository {
             where: { id },
         });
 
-        if (!user) {
-            throw new NotFoundException('Usuário não encontrado');
-        }
         if (!user) throw new NotFoundException('Usuário não encontrado');
         delete user.password;
+
         return user;
     }
 
@@ -78,28 +73,58 @@ export class UserPrismaRepository implements UserRepository {
         phoneNumber,
         birthDate,
     }: UpdateUserDto): Promise<User | null> {
-        const userData: any = {
+        const userData: Partial<User> = {
             email,
             password,
             name,
             phoneNumber,
         };
 
-        if (!!birthDate) {
+        if (birthDate) {
             userData.birthDate = new Date(birthDate);
         }
+
         const result = await this.prisma.user.update({
-            where: {
-                id,
-            },
+            where: { id },
             data: userData,
         });
-        if (!result) {
-            throw new NotFoundException('Usuário não encontrado');
-        }
 
+        if (!result) throw new NotFoundException('Usuário não encontrado');
         delete result.password;
 
         return result;
+    }
+
+    // Novo método para atualizar o usuário com o token de recuperação de senha
+    async updateUserWithResetToken(
+        email: string,
+        resetPasswordToken: string,
+        resetPasswordExpires: Date,
+    ): Promise<User | null> {
+        const user = await this.prisma.user.update({
+            where: { email },
+            data: {
+                resetPasswordToken,
+                resetPasswordExpires,
+            },
+        });
+
+        if (!user) throw new NotFoundException('Usuário não encontrado');
+        return user;
+    }
+
+    // Novo método para encontrar um usuário pelo token de recuperação de senha
+    async findUserByResetToken(token: string): Promise<User | null> {
+        const user = await this.prisma.user.findFirst({
+            where: {
+                resetPasswordToken: token,
+                resetPasswordExpires: {
+                    gt: new Date(), // Verifica se o token não expirou
+                },
+            },
+        });
+
+        if (!user) throw new NotFoundException('Token inválido ou expirado');
+        return user;
     }
 }
