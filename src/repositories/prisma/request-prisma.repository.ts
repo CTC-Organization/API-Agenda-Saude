@@ -61,7 +61,7 @@ export class RequestPrismaRepository implements RequestRepository {
     }
 
     async createRequest(
-        {  patientId, serviceTokenId,specialty }: CreateRequestDto,
+        { patientId, serviceTokenId, specialty }: CreateRequestDto,
         files?: Array<Express.Multer.File>,
     ) {
         const request = await this.prisma.request.create({
@@ -223,15 +223,17 @@ export class RequestPrismaRepository implements RequestRepository {
         if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
             throw new BadRequestException(`A requisição não está mais disponível`);
         }
-        await this.mobileDeviceService.sendOneNotification({
-            title: `Sua requisição para ${result.specialty} foi aceita`,
-            body: `Ver mais detalhes - Requisição para ${
-                result.specialty
-            } foi aceita para ${formatDateToBrazilian(new Date(date))}`,
-            mobileDeviceId: result.patient.mobileDeviceId,
-            data: { appointmentDate: date },
-            sound: 'default',
-        });
+        if (!!result?.patient?.mobileDeviceId) {
+            await this.mobileDeviceService.sendOneNotification({
+                title: `Sua requisição para ${result.specialty} foi aceita`,
+                body: `Ver mais detalhes - Requisição para ${
+                    result.specialty
+                } foi aceita para ${formatDateToBrazilian(new Date(date))}`,
+                mobileDeviceId: result.patient.mobileDeviceId,
+                data: { appointmentDate: date },
+                sound: 'default',
+            });
+        }
         return await this.prisma.request.update({
             where: {
                 id: requestId,
@@ -260,14 +262,16 @@ export class RequestPrismaRepository implements RequestRepository {
         if (result.status !== RequestStatus.PENDING && result.status !== RequestStatus.CONFIRMED) {
             throw new BadRequestException(`A requisição não está disponível para negação`);
         }
+        if (!!result?.patient?.mobileDeviceId) {
+            await this.mobileDeviceService.sendOneNotification({
+                title: `Sua requisição para ${result.specialty} foi negada`,
+                body: `Ver mais detalhes - Requisição negada: ${observation}`,
+                mobileDeviceId: result.patient.mobileDeviceId,
+                data: { withSome: 'Clique para ver mais informações' },
+                sound: 'default',
+            });
+        }
 
-        await this.mobileDeviceService.sendOneNotification({
-            title: `Sua requisição para ${result.specialty} foi negada`,
-            body: `Ver mais detalhes - Requisição negada: ${observation}`,
-            mobileDeviceId: result.patient.mobileDeviceId,
-            data: { withSome: 'Clique para ver mais informações' },
-            sound: 'default',
-        });
         return await this.prisma.request.update({
             where: {
                 id: requestId,
