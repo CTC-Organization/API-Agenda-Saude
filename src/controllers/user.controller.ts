@@ -24,10 +24,7 @@ export class UserController {
     }
 
     @Post('reset-password')
-    async resetPassword(
-        @Body('token') token: string,
-        @Body('newPassword') newPassword: string,
-    ) {
+    async resetPassword(@Body('token') token: string, @Body('newPassword') newPassword: string) {
         return await this.userService.resetPassword(token, newPassword);
     }
 }

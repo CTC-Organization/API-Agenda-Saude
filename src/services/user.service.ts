@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { UserRepository } from '../repositories/user.repository';
 import { PrismaService } from './prisma.service'; // Certifique-se de que o caminho está correto
@@ -6,12 +6,15 @@ import * as argon2 from 'argon2';
 import * as crypto from 'crypto';
 import * as dayjs from 'dayjs';
 import { excludeFieldsInEntity } from '../utils/exclude-fields';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UserService {
+    private readonly logger = new Logger(UserService.name);
     constructor(
         private readonly userRepository: UserRepository,
         private readonly prisma: PrismaService, // Injeta o PrismaService aqui
+        private readonly mailerService: MailerService,
     ) {}
 
     async createUser({ email, password, cpf, name, phoneNumber, role, birthDate }: CreateUserDto) {
@@ -68,10 +71,29 @@ export class UserService {
             },
         });
 
+        this.sendMail(resetToken, email);
+
         // Aqui você enviaria o token para o email do usuário, mas para fins de exemplo:
         console.log(`Token de recuperação: ${resetToken}`);
 
         return { message: 'Instruções de recuperação de senha enviadas para o e-mail.' };
+    }
+
+    sendMail(token: any, email: any): void {
+        this.mailerService
+            .sendMail({
+                to: email,
+                from: 'ctcagendasaude@gmail.com',
+                subject: 'Recuperação de Senha',
+                text: 'Recuperação',
+                html: `<b>Token de recuperação: ${token}</b>`,
+            })
+            .then(() => {
+                console.log('Email enviado com sucesso!');
+            })
+            .catch((error) => {
+                console.error('Erro ao enviar email:', error);
+            });
     }
 
     async resetPassword(token: string, newPassword: string) {
