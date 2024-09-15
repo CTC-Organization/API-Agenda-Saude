@@ -319,8 +319,7 @@ export class RequestPrismaRepository implements RequestRepository {
         });
         if (!result) throw new NotFoundException('Ficha de atendimento não encontrada 4');
         if (
-            (result.status === RequestStatus.PENDING ||
-                result.status === RequestStatus.CONFIRMED) &&
+            result.status === RequestStatus.PENDING &&
             result?.date &&
             new Date(result?.date) < new Date()
         ) {
@@ -351,11 +350,7 @@ export class RequestPrismaRepository implements RequestRepository {
             const now = new Date(); // agora'
             const filteredRequestsIds = result
                 .filter(
-                    (r) =>
-                        (r.status === RequestStatus.PENDING ||
-                            r.status === RequestStatus.CONFIRMED) &&
-                        r?.date &&
-                        new Date(r?.date) < now,
+                    (r) => r.status === RequestStatus.PENDING && r?.date && new Date(r?.date) < now,
                 ) // expirationDate === agora então não filtra
                 .map((x) => x.id);
             if (filteredRequestsIds?.length) {
