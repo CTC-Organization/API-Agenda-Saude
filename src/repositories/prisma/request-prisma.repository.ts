@@ -229,7 +229,7 @@ export class RequestPrismaRepository implements RequestRepository {
                 result.specialty
             } foi aceita para ${formatDateToBrazilian(new Date(date))}`,
             mobileDeviceId: result.patient.mobileDeviceId,
-            data: { withSome: 'Clique para ver mais informações' },
+            data: { appointmentDate: date },
             sound: 'default',
         });
         return await this.prisma.request.update({

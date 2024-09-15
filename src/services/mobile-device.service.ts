@@ -79,7 +79,7 @@ export class MobileDeviceService {
         body: string | 'uma notificação';
         sound: string | 'default';
         mobileDeviceId: string;
-        data: { withSome: string | 'data' };
+        data: any;
     }) {
         const patientExpoToken = await this.prisma.mobileDevice.findFirst({
             where: {
