@@ -4,7 +4,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 export class LogController {
     constructor() {}
 
-    @Post('log')
+    @Post()
     async logData(@Body() log: { message: string }) {
         console.log('Log recebido do app:', log.message);
         // Ou armazene os logs em um banco de dados, se necessário
