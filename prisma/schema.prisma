@@ -48,6 +48,8 @@ model User {
   admins       Admin[] // "Relacionamentos do prisma"
   employees    Employee[] // "Relacionamentos do prisma"
   refreshToken RefreshToken?
+  resetPasswordToken  String?       // Campo para o token de recuperação
+  resetPasswordExpires DateTime?   
   //latitude     // O admin já possui acesso ao posto do usuário
   //longitude    // O admin já possui acesso ao posto do usuário
   Uploads      Upload[]

@@ -17,4 +17,14 @@ export class UserController {
     async getUserById(@Param('id') id: string) {
         return await this.userService.getUserById(id);
     }
+
+    @Post('request-password-reset')
+    async requestPasswordReset(@Body('email') email: string) {
+        return await this.userService.requestPasswordReset(email);
+    }
+
+    @Post('reset-password')
+    async resetPassword(@Body('token') token: string, @Body('newPassword') newPassword: string) {
+        return await this.userService.resetPassword(token, newPassword);
+    }
 }

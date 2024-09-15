@@ -10,6 +10,6 @@ export class CreateRequestDto {
     patientId: string;
 
     @IsNotEmpty()
-    @IsDateString()
-    date: string;
+    @IsString()
+    specialty: string;
 }

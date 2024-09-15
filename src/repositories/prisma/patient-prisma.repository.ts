@@ -28,7 +28,6 @@ export class PatientPrismaRepository extends UserPrismaRepository implements Pat
     async createPatient({
         email,
         password,
-        cpf,
         name,
         phoneNumber,
         role,

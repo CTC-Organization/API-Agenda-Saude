@@ -69,13 +69,13 @@ export class RequestController {
         @Req() req: any,
         @Body()
         {
-            date,
+            specialty,
             serviceTokenId,
             patientId,
         }: {
-            date: string;
             serviceTokenId: string;
             patientId: string;
+            specialty: string;
         },
         @UploadedFiles(
             new ParseFilePipe({
@@ -95,8 +95,8 @@ export class RequestController {
         }
         return await this.requestService.createRequest(
             {
+                specialty,
                 patientId,
-                date,
                 serviceTokenId,
             },
             files,
