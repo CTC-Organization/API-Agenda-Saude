@@ -20,8 +20,18 @@ export class UsfService {
         });
         return result;
     }
+    async findUsfsByCoordenates({ latitude, longitude }: { latitude: string; longitude: number }) {
+        const result = await this.usfRepository.findUsfsByCoordenates({
+            latitude,
+            longitude,
+        });
+        return result;
+    }
 
     async listUsfsByHealthDistrict(distrito_sanitario: number): Promise<any> {
         return await this.usfRepository.listUsfsByHealthDistrict(distrito_sanitario);
+    }
+    async listUsfs(): Promise<any> {
+        return await this.usfRepository.listUsfs();
     }
 }

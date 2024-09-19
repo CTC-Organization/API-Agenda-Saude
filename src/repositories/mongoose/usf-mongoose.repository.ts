@@ -22,6 +22,7 @@ export class UsfMongooseRepository implements UsfRepository {
         this.googleMapsApiKey = this.configService.getGoggleMapsApiKey();
     }
 
+    // retorna a usf mais próxima em um bairro, sem usfs no bairro retorna a usf mais próxima em um distrito
     async findUsfByCoordenates({
         latitude,
         longitude,
@@ -78,8 +79,69 @@ export class UsfMongooseRepository implements UsfRepository {
         }
     }
 
+    // retorna as usfs para um bairro caso ache um bairro, senão retornar as usfs de um distrito
+    async findUsfsByCoordenates({
+        latitude,
+        longitude,
+    }: {
+        latitude: string;
+        longitude: number;
+    }): Promise<any> {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${this.googleMapsApiKey}`;
+
+        try {
+            const response = await axios.get(url);
+            const results = response.data.results;
+            let bairro = '';
+            if (results.length > 0) {
+                for (const component of results[0].address_components) {
+                    if (
+                        component.types.includes('sublocality') ||
+                        component.types.includes('neighborhood')
+                    ) {
+                        bairro = removeAccents(component.long_name.toLowerCase());
+                    }
+                }
+            }
+            if (bairro !== '') {
+                const usfs = await this.usfModel.find({ bairro }).exec();
+
+                if (usfs.length >= 1) {
+                    return usfs;
+                } else {
+                    const district =
+                        await this.healthDistrictMongooseRepository.findHealthDistrictByCoordinates(
+                            {
+                                latitude,
+                                longitude,
+                            },
+                        );
+                    if (district) {
+                        const usfsFromDistrict = await this.usfModel
+                            .find({ distrito_sanitario: district.distrito_sanitario })
+                            .exec();
+                        return usfsFromDistrict;
+                    } else {
+                        throw new Error('Distrito sanitário não encontrado');
+                    }
+                }
+            } else {
+                throw new Error('Distrito sanitário não encontrado');
+            }
+        } catch (error) {
+            console.error('Error fetching data from Google Maps API:', error);
+            throw new Error('Erro ao buscar bairro usando coordenadas');
+        }
+    }
+
+    // lista todas as usfs por distrito sanitário
     async listUsfsByHealthDistrict(distrito_sanitario: number): Promise<any> {
         return await this.usfModel.find({ distrito_sanitario }).exec();
+    }
+
+    // lista todas as usfs (Recife)
+    async listUsfs(): Promise<any> {
+        return await this.usfModel.find().exec();
     }
 
     async createUsfList(createUsfDtoList: Array<CreateUsfDto>): Promise<any> {

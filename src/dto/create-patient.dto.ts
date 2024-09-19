@@ -3,7 +3,6 @@ import { UserRole } from '@prisma/postgres-client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreatePatientDto {
-    @IsOptional()
     @IsEmail()
     @ApiProperty({
         example: 'Email no formato tadandan@xemail.com',
@@ -55,7 +54,7 @@ export class CreatePatientDto {
     @IsString()
     @ApiProperty({
         example: '111111111',
-        description: 'número do cartão sus',
+        description: 'número do cartão sus- usado para login também.',
     })
     susNumber: string;
 

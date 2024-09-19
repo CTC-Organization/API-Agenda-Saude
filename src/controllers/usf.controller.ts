@@ -27,15 +27,28 @@ export class UsfController {
 
         return await this.usfService.createUsfList(formattedRecords);
     }
-    @Get('by-health-district/:id')
+    @Get('find-by-health-district/:id')
     async listUsfsByHealthDistrictId(@Param('id') id: number) {
         return await this.usfService.listUsfsByHealthDistrict(id);
     }
     @Get()
+    async listUsfs() {
+        return await this.usfService.listUsfs();
+    }
+    @Post('find-unique-by-coordenates')
     async findUsfByCoordenates(
         @Body() { latitude, longitude }: { latitude: string; longitude: number },
     ) {
         return await this.usfService.findUsfByCoordenates({
+            latitude,
+            longitude,
+        });
+    }
+    @Post('find-many-by-coordenates')
+    async findUsfsByCoordenates(
+        @Body() { latitude, longitude }: { latitude: string; longitude: number },
+    ) {
+        return await this.usfService.findUsfsByCoordenates({
             latitude,
             longitude,
         });

@@ -8,6 +8,7 @@ import { randomUUID } from 'crypto';
 import { CreateAttachmentsDto } from '../../dto/create-attachments.dto';
 import { RequestPrismaRepository } from './request-prisma.repository';
 import { Bucket, Storage } from '@google-cloud/storage';
+import { UserPrismaRepository } from './user-prisma.repository';
 
 @Injectable()
 export class AttachmentPrismaRepository implements AttachmentRepository {
@@ -15,10 +16,11 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
     constructor(
         private prisma: PrismaService,
+        private envConfigService: EnvConfigService,
+        @Inject(forwardRef(() => UserPrismaRepository))
+        private userPrismaRepository: UserPrismaRepository,
         @Inject(forwardRef(() => RequestPrismaRepository))
         private requestPrismaRepository: RequestPrismaRepository,
-
-        private envConfigService: EnvConfigService,
     ) {
         const credentials = JSON.parse(this.envConfigService.getGoogleCloudCredentials());
         const storage = new Storage({
@@ -47,12 +49,18 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
      */
     async createAttachment({ file, referenceId, attachmentType, folder }: CreateAttachmentDto) {
         try {
-            if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
+            if (attachmentType === AttachmentType.REQUEST_ATTACHMENT) {
                 if (!(await this.requestPrismaRepository.findRequestById(referenceId)))
                     throw new NotFoundException('RequisiçfindRequestByIdão não foi encontrada');
-            const fileName = `${file.originalname}-${randomUUID()}`;
+            }
+
+            const fileName = `${randomUUID()}-${file.originalname}`;
             const blob = this.bucket.file(`${folder}/${fileName}}`);
-            const blobStream = blob.createWriteStream();
+            const blobStream = blob.createWriteStream({
+                metadata: {
+                    contentType: file.mimetype, // Defina o tipo de conteúdo
+                },
+            });
             const uploadPromise = new Promise<string>((resolve, reject) => {
                 blobStream.on('finish', async () => {
                     await blob.makePublic();
@@ -91,13 +99,19 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
     async createAttachments({ files, referenceId, attachmentType, folder }: CreateAttachmentsDto) {
         try {
-            if (attachmentType === AttachmentType.REQUEST_ATTACHMENT)
+            if (attachmentType === AttachmentType.REQUEST_ATTACHMENT) {
                 if (!(await this.requestPrismaRepository.findRequestById(referenceId)))
                     throw new NotFoundException('Requisição não foi encontrada');
+            }
+
             const uploadPromises = files.map(async (file) => {
-                const fileName = `${file.originalname}-${randomUUID()}`;
+                const fileName = `${randomUUID()}-${file.originalname}`;
                 const blob = this.bucket.file(`${folder}/${fileName}`);
-                const blobStream = blob.createWriteStream();
+                const blobStream = blob.createWriteStream({
+                    metadata: {
+                        contentType: file.mimetype, // Defina o tipo de conteúdo
+                    },
+                });
 
                 const uploadPromise = new Promise<string>((resolve, reject) => {
                     blobStream.on('finish', async () => {
@@ -119,7 +133,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
                 try {
                     const publicUrl = await uploadPromise;
-                    return { file, publicUrl };
+                    return { file, publicUrl, fileName };
                 } catch (err) {
                     console.error('Error during file upload:', err);
                     throw err;
@@ -128,12 +142,12 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
 
             const uploadedFiles = await Promise.all(uploadPromises);
 
-            const attachmentCreatePromises = uploadedFiles.map(({ file, publicUrl }) => {
+            const attachmentCreatePromises = uploadedFiles.map(({ file, publicUrl, fileName }) => {
                 return this.prisma.attachment.create({
                     data: {
                         id: randomUUID(),
                         type: attachmentType,
-                        name: file.originalname,
+                        name: fileName,
                         url: publicUrl,
                         requestId: referenceId,
                         folder,
@@ -194,7 +208,7 @@ export class AttachmentPrismaRepository implements AttachmentRepository {
             const attachments = await this.prisma.attachment.findMany({
                 where: { requestId },
             });
-            if (attachments.length === 0) {
+            if (attachments?.length === 0) {
                 throw new NotFoundException('Nenhum anexo encontrado');
             }
             if (attachments[0].type === AttachmentType.REQUEST_ATTACHMENT) {

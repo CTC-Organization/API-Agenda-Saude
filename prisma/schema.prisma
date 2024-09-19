@@ -9,6 +9,10 @@ generator client {
   output        = "../node_modules/@prisma/postgres-client"
 }
 
+enum UploadType {
+  AVATAR
+}
+
 enum AttachmentType {
   REQUEST_ATTACHMENT
 }
@@ -30,11 +34,12 @@ model RefreshToken {
 
 model User {
   id           String        @id @default(uuid())
-  cpf          String        @unique
+  // cpf          String        @unique
   password     String
   role         UserRole      @default(PATIENT)
-  email        String?       @unique
+  email        String        @unique
   name         String?
+  avatar       String?
   birthDate    DateTime?     @map("birth_date")
   phoneNumber  String?       @map("phone_number")
   createdAt    DateTime      @default(now()) @map("created_at")
@@ -43,6 +48,9 @@ model User {
   admins       Admin[] // "Relacionamentos do prisma"
   employees    Employee[] // "Relacionamentos do prisma"
   refreshToken RefreshToken?
+  //latitude     // O admin já possui acesso ao posto do usuário
+  //longitude    // O admin já possui acesso ao posto do usuário
+  Uploads      Upload[]
 
   @@map("users")
 }
@@ -51,7 +59,7 @@ model Patient {
   id            String         @id @default(uuid())
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        String         @map("user_id")
-  susNumber     String?        @map("sus_number")
+  susNumber     String         @unique @map("sus_number")
   requests      Request[]
   serviceTokens ServiceToken[]
 
@@ -95,10 +103,13 @@ model ServiceToken {
 }
 
 enum RequestStatus {
-  CANCELLED
   COMPLETED
   EXPIRED
   PENDING
+  DENIED
+  ACCEPTED
+  CONFIRMED
+  CANCELLED
 }
 
 model Request {
@@ -108,10 +119,16 @@ model Request {
   serviceToken   ServiceToken  @relation(fields: [serviceTokenId], references: [id])
   serviceTokenId String        @map("service_token_id")
   status         RequestStatus @default(PENDING)
-  date           DateTime
   createdAt      DateTime      @default(now()) @map("created_at")
   updatedAt      DateTime      @updatedAt @map("updated_at")
   attachments    Attachment[]
+
+  date        DateTime?
+  latitude    String?
+  longitude   String?
+  doctorName  String?   @map("doctor_name")
+  specialty   String?
+  observation String?
 
   @@map("requests")
 }
@@ -128,6 +145,20 @@ model Attachment {
   folder      String
 
   @@map("attachments")
+}
+
+model Upload {
+  id          String     @id @default(uuid())
+  user        User       @relation(fields: [userId], references: [id])
+  userId      String     @map("user_id")
+  description String?
+  type        UploadType
+  name        String
+  url         String
+  createdAt   DateTime   @default(now()) @map("created_at")
+  folder      String
+
+  @@map("uploads")
 }
 
 // npx prisma migrate dev --name nome da nova migração para adicionar nova alteração

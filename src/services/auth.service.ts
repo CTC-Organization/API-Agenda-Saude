@@ -17,15 +17,15 @@ export class AuthService {
     ) {}
 
     async login(loginInputDto: LoginInputDto): Promise<AuthType> {
-        const { cpf, password } = loginInputDto;
+        const { password, email } = loginInputDto;
         const user = await this.prisma.user.findUnique({
             where: {
-                cpf,
+                email,
             },
         });
-        if (!user) throw new BadRequestException('Seu cpf e/ou senha estão incorretos!');
+        if (!user) throw new BadRequestException('Seu email e/ou senha estão incorretos!');
         const isMatch = await argon2.verify(user.password, password);
-        if (!isMatch) throw new BadRequestException('Seu cpf e/ou senha estão incorretos!');
+        if (!isMatch) throw new BadRequestException('Seu email e/ou senha estão incorretos!');
         const result = await this.createToken(user);
         return result;
     }
@@ -49,7 +49,7 @@ export class AuthService {
         // if (patient?.role !== UserRole.PATIENT)
         //     throw new BadRequestException('Essa role ainda não foi implementada');
         const expiresInAccessToken = dayjs().add(1, 'days').unix(); // testar refreshtoken e accesstoken
-        const patient = await this.patientService.getPatientByCpf(user.cpf);
+        const patient = await this.patientService.getPatientByEmail(user.email);
         const refreshToken = await this.createRefreshToken(user);
         delete refreshToken.userId;
 
@@ -57,6 +57,7 @@ export class AuthService {
             id: patient.id,
             userId: user.id,
             name: user.name,
+            email: user.email,
             role: user.role,
             exp: expiresInAccessToken,
             refreshToken: refreshToken.id,
@@ -65,7 +66,7 @@ export class AuthService {
                     id: patient.id,
                     userId: user.id,
                     name: user.name,
-                    cpf: user.cpf,
+                    email: user.email,
                     role: user.role,
                 },
                 {

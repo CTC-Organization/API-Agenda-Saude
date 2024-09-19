@@ -23,7 +23,7 @@ export class AuthController {
     }
 
     @UseGuards(ValidateIsUserSelfOrAdmin)
-    @Get('logout/:id')
+    @Post('logout/:id')
     async logout(@Param('id') id: string) {
         return await this.authService.logout(id);
     }

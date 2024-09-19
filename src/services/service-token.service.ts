@@ -13,6 +13,12 @@ export class ServiceTokenService {
             throw err;
         }
     }
+    async findValidServiceTokenByPatientId(patientId: string) {
+        const result = await this.servicetokenRepository.findValidServiceTokenByPatientId(
+            patientId,
+        );
+        return result;
+    }
     async findServiceTokenById(serviceTokenId: string) {
         const result = await this.servicetokenRepository.findServiceTokenById(serviceTokenId);
         return result;

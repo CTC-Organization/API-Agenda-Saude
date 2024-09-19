@@ -5,9 +5,11 @@ import { PatientPrismaRepository } from '../repositories/prisma/patient-prisma.r
 import { PrismaService } from '../services/prisma.service';
 import { PatientRepository } from '@/repositories/patient.repository';
 import { AuthModule } from './auth.module';
+import { AttachmentModule } from './attachment.module';
+import { UploadModule } from './upload.module';
 
 @Module({
-    imports: [forwardRef(() => AuthModule)],
+    imports: [forwardRef(() => AuthModule), forwardRef(() => UploadModule)],
     controllers: [PatientController],
     providers: [
         PatientService,

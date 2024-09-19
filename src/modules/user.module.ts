@@ -12,11 +12,19 @@ import { AuthModule } from './auth.module';
     providers: [
         PrismaService,
         UserService,
+        UserPrismaRepository,
         {
             provide: UserRepository,
             useClass: UserPrismaRepository,
         },
     ],
-    exports: [UserService],
+    exports: [
+        UserService,
+        UserPrismaRepository,
+        {
+            provide: UserRepository,
+            useClass: UserPrismaRepository,
+        },
+    ],
 })
 export class UserModule {}

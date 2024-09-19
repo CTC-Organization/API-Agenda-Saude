@@ -7,5 +7,5 @@ export abstract class UserRepository {
     abstract updateUser(user: UpdateUserDto): Promise<User | null>;
     abstract findUserById(id: string): Promise<User | null>;
     abstract findUserByEmail(email: string): Promise<User | null>;
-    abstract findUserByCpf(cpf: string): Promise<User | null>;
+    // abstract findUserByCpf(cpf: string): Promise<User | null>;
 }
