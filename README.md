@@ -87,3 +87,6 @@ chave do authorization mongo replica
 
 openssl rand -base64 756 | tr -d '\n' > chave.txt
 chmod 600 chaveRSA
+
+
+swagger: http://localhost:8080/api

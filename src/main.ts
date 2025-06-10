@@ -14,6 +14,7 @@ async function bootstrap() {
         'https://api-agenda-saude-production.up.railway.app',
         'https://9000-idx-agenda-saude-admin-1725118421514.cluster-kc2r6y3mtba5mswcmol45orivs.cloudworkstations.dev',
         'http://localhost:38287',
+        'http://localhost:8081',
     ];
 
     const app = await NestFactory.create(AppModule, {
